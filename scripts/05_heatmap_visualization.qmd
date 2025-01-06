@@ -1,0 +1,54 @@
+---
+title: "05_heatmap_visualization"
+author: Elias
+format: html
+editor: visual
+---
+
+```{r}
+library(dplyr)
+ratios <- read.csv("/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/processed/ratios_FC_protein_RNA.csv", row.names = 1) %>% 
+  distinct(GeneID, .keep_all = TRUE) %>%  # Remove duplicate GeneIDs, keep first occurrence
+  tibble::column_to_rownames(var = "GeneID") %>%  # Set GeneID as rownames
+  select(-c(1)) %>%  # Remove the last column
+  setNames(c("0 to 1", "1 to 6", "6 to 12", "12 to 24", "24 to 36", "36 to 48", "48 to 72")) %>% 
+  na.omit() %>% 
+  filter(rowSums(select(., everything()) < -1 | select(., everything()) > 1) > 0)
+```
+
+```{r}
+pheatmap::pheatmap(ratios, 
+                   cluster_rows = T, 
+                   cluster_cols = F, 
+                   show_rownames = T, 
+                   show_colnames = T,
+                   angle_col = 45,
+                   color = colorRampPalette(c("blue", "white", "red"))(10))
+```
+
+```{r fig.height= 10}
+TF_table <- read.delim("/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/reference/TFcat.txt", header = T, sep = "\t")
+
+mice_TFs <- TF_table$Mouse
+
+table(rownames(ratios) %in% mice_TFs)
+
+# filter ratios for TFs
+ratios_TFs <- ratios[rownames(ratios) %in% mice_TFs,]
+
+pheatmap::pheatmap(ratios_TFs, 
+                   cluster_rows = T, 
+                   cluster_cols = F, 
+                   show_rownames = T, 
+                   show_colnames = T,
+                   angle_col = 45,
+                   main = "Transcription Factors Ratio over time points",
+                   color = colorRampPalette(c("blue", "white", "red"))(10))
+```
+
+```{r}
+```
+
+```{r}
+```
+

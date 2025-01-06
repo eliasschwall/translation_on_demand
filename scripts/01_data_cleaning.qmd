@@ -1,0 +1,45 @@
+---
+title: "Data Cleaning Script"
+author: "Elias"
+format: html
+editor: visual
+---
+
+```{r loading data}
+proteomic_data <- suppressMessages(readxl::read_xlsx("/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/raw/proteomic_data_raw.xlsx", sheet = "Raw Proteome Data"))
+
+transcriptomic_data <- suppressMessages(readxl::read_xlsx("/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/raw/transcriptomic_data_raw.xlsx", sheet = "Raw Transcriptome Data"))
+```
+
+```{r data cleaning}
+library(dplyr)
+
+proteomic_data_cleaned <- as.data.frame(proteomic_data) %>%
+ dplyr::select(c(1,2), where(~ !is.na(.[1]) && .[1] == "Pooled")) %>% 
+ dplyr::slice(-1) %>% 
+ setNames(c("UniprotID", "GeneID", "0m", "30m", "1h", "6h", "12h", "24h", "36h", "48h", "72h")) %>% 
+ dplyr::select(-c("30m")) %>% 
+ mutate(across(3:10, ~ na_if(., "NA"))) %>%
+ filter(!apply(select(., 3:10), 1, function(row) all(is.na(row))))
+ 
+
+transcriptomic_data_cleaned <- as.data.frame(transcriptomic_data) %>%
+ setNames(c("ensembl_gene_id", "GeneID", "0m_1", "0m_2", "1h_1", "1h_2", "6h_1", "6h_2", "12h_1", "12h_2", "24h_1", "24h_2", "36h_1", "36h_2", "48h_1", "48h_2", "72h_1", "72h_2")) %>% 
+  slice(-1) %>% 
+  mutate(across(c(3:18), as.numeric)) %>%
+  mutate(`0m` = (`0m_1` + `0m_2`) / 2,
+         `1h` = (`1h_1` + `1h_2`) / 2,
+         `6h` = (`6h_1` + `6h_2`) / 2,
+         `12h` = (`12h_1` + `12h_2`) / 2,
+         `24h` = (`24h_1` + `24h_2`) / 2,
+         `36h` = (`36h_1` + `36h_2`) / 2,
+         `48h` = (`48h_1` + `48h_2`) / 2,
+         `72h` = (`72h_1` + `72h_2`) / 2) %>% 
+  dplyr::select(ensembl_gene_id, GeneID, `0m`, `1h`, `6h`, `12h`, `24h`, `36h`, `48h`, `72h`)
+```
+
+```{r writing data}
+write.csv(proteomic_data_cleaned, "/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/processed/proteomic_data_cleaned.csv", row.names = FALSE)
+
+write.csv(transcriptomic_data_cleaned, "/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/processed/transcriptomic_data_cleaned.csv", row.names = FALSE)
+```

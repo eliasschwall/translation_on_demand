@@ -1,0 +1,71 @@
+---
+title: "Calculating Ratios"
+author: "Elias"
+format: html
+editor: visual
+---
+
+```{r}
+TPM_log2_FC <- read.csv("/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/processed/TPM_log2_FC.csv")
+
+proteomic_data_FC <- read.csv("/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/processed/proteomic_data_FC.csv", row.names = 1)
+```
+
+```{r}
+library(dplyr)
+protein_RNA_FC <- merge(proteomic_data_FC, TPM_log2_FC, by = "GeneID") %>% 
+  relocate(X, .before = "GeneID") %>% 
+  rename(., Ensembl_ID = X) %>% 
+  rename_with(~ gsub("\\.x$", "_protein", .x)) %>%
+  rename_with(~ gsub("\\.y$", "_RNA", .x))
+```
+
+```{r}
+ratios_FC_protein_RNA <- protein_RNA_FC[,3:9] - protein_RNA_FC[,10:16] 
+
+colnames(ratios_FC_protein_RNA) <- paste0(colnames(ratios_FC_protein_RNA)[1:7], "_RNA_ratio") 
+
+ratios_FC_protein_RNA <- cbind(GeneID = protein_RNA_FC$GeneID, ratios_FC_protein_RNA)
+ratios_FC_protein_RNA <- cbind(Ensembl_ID = protein_RNA_FC$Ensembl_ID, ratios_FC_protein_RNA)
+```
+
+```{r}
+write.csv(ratios_FC_protein_RNA, file = "/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/processed/ratios_FC_protein_RNA.csv")
+```
+
+```{r}
+background_genes <- ratios_FC_protein_RNA$GeneID
+
+candidate_threshold <- 1
+
+FC_0m_to_1h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_0m_to_1h_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_1h_to_6h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_1h_to_6h_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_6h_to_12h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_6h_to_12h_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_12h_to_24h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_12h_to_24h_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_24h_to_36h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_24h_to_36h_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_36h_to_48h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_36h_to_48h_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_48h_to_72h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_48h_to_72h_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+translation_on_demand_candidates <- list(
+  TOD_candidates_0m_to_1h = FC_0m_to_1h_protein_RNA_ratio_gene_list,
+  TOD_candidates_1h_to_6h = FC_1h_to_6h_protein_RNA_ratio_gene_list,
+  TOD_candidates_6h_to_12h = FC_6h_to_12h_protein_RNA_ratio_gene_list,
+  TOD_candidates_12h_to_24h = FC_12h_to_24h_protein_RNA_ratio_gene_list,
+  TOD_candidates_24h_to_36h = FC_24h_to_36h_protein_RNA_ratio_gene_list,
+  TOD_candidates_36h_to_48h = FC_36h_to_48h_protein_RNA_ratio_gene_list,
+  TOD_candidates_48h_to_72h = FC_48h_to_72h_protein_RNA_ratio_gene_list
+)
+
+# removing duplicates in the lists 
+translation_on_demand_candidates <- lapply(translation_on_demand_candidates, unique)
+
+jsonlite::write_json(translation_on_demand_candidates, path = "/cellfile/cellnet/mESC_differentiation/translation_on_demand/results/translation_on_demand_candidates_1_threshold.json")
+
+write.csv(background_genes, "/cellfile/cellnet/mESC_differentiation/translation_on_demand/results/background_genes.csv")
+```
