@@ -1,4 +1,0 @@
----
-title: "Translation on Demand Dashboard"
-format: dashboard
----
