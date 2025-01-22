@@ -2,7 +2,6 @@
 title: "Data Normalization and FC Calculation"
 author: "Elias"
 format: html
-editor: visual
 ---
 
 ```{r loading data}

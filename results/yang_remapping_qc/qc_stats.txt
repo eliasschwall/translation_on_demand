@@ -1,0 +1,10 @@
+QC Summary Statistics:
+
+Number of samples: 16 
+Number of genes after filtering: 23429 
+Mean library size: 35626027 
+Median library size: 35324206 
+
+Library sizes per sample:
+ 0h_rep1  0h_rep2  1h_rep1  1h_rep2  6h_rep1  6h_rep2 12h_rep1 12h_rep2 24h_rep1 24h_rep2 36h_rep1 36h_rep2 48h_rep1 48h_rep2 72h_rep1 72h_rep2 
+46082811 35587544 31393959 33586715 37272358 40999433 35088431 34079476 38541584 35249716 35398695 28609257 39594992 31107120 36608440 30815906 

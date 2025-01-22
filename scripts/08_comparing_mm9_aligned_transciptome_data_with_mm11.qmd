@@ -1,0 +1,45 @@
+---
+title: "Comparing the newly aligned data with the old"
+format: html
+---
+
+```{r}
+#| label: loading in the data
+mm9_transcipt_data <- read.csv("../data/processed/transcriptomic_data_cleaned.csv") %>% 
+  dplyr::select(-GeneID) %>% 
+  tibble::column_to_rownames('ensembl_gene_id') %>% 
+  setNames(c('h0', 'h1', 'h6', 'h12', 'h24', 'h36', 'h48', 'h72'))
+mm11_transcirpt_data_raw <- read.csv("../data/raw/yang_raw_data/yang_m11_counts.csv")
+```
+
+The mm_9 data is already averages across replicates, so we need to do the same for the mm11.
+```{r}
+#| label: preprocessing mm11
+
+mm11_transcirpt_data <- mm11_transcirpt_data_raw %>% 
+  mutate(X = gsub("\\..*$", "", X)) %>% 
+  tibble::column_to_rownames('X') %>% 
+  mutate(h0  = rowMeans(dplyr::select(., X0h_rep1, X0h_rep2)),
+         h1  = rowMeans(dplyr::select(., X1h_rep1, X1h_rep2)),
+         h6  = rowMeans(dplyr::select(., X6h_rep1, X6h_rep2)),
+         h12 = rowMeans(dplyr::select(., X12h_rep1, X12h_rep2)),
+         h24 = rowMeans(dplyr::select(., X24h_rep1, X24h_rep2)),
+         h36 = rowMeans(dplyr::select(., X36h_rep1, X36h_rep2)),
+         h48 = rowMeans(dplyr::select(., X48h_rep1, X48h_rep2)),
+         h72 = rowMeans(dplyr::select(., X72h_rep1, X72h_rep2))) %>% 
+  dplyr::select(h0, h1, h6, h12, h24, h36, h48, h72) %>% 
+  dplyr::filter(rowMeans(dplyr::select(., everything())) != 0) 
+
+rm(mm11_transcirpt_data_raw)
+
+write.csv(mm11_transcirpt_data, file = "../data/processed/mm11_transcirpt_data.csv")
+```
+
+```{r}
+#| label: comparing the two data sets to see if we can work with mm11
+summary(mm9_transcipt_data)
+summary(mm11_transcirpt_data)
+
+rownames(mm9_transcipt_data) %in% rownames(mm11_transcirpt_data) %>% table()
+```
+

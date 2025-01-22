@@ -1,0 +1,65 @@
+---
+title: "UTRs Analysis for ToD candidates"
+author: "Elias Schwall"
+format: 
+  html:
+     embed-resources: true
+---
+
+# Getting UTRs for ToD candidates
+For doing motif research, we want to analyze the UTRs of the ToD candidates. We will biomart to get the UTRs of the ToD candidates.
+
+```{r}
+#| label: loading in TOD_candidates
+library(tidyverse)
+TOD_candidates <- jsonlite::read_json("/cellfile/cellnet/mESC_differentiation/translation_on_demand/results/translation_on_demand_candidates_1_threshold.json", simplifyVector = TRUE)
+```
+
+```{r}
+#| label: biomaRt gambling for function to work
+library(biomaRt)
+
+# Initialize variables
+mart <- NULL
+attempt <- 0
+max_attempts <- 100  
+
+# Retry until successful or maximum attempts are reached
+while (is.null(mart) && attempt < max_attempts) {
+  attempt <- attempt + 1
+  cat("Attempt", attempt, "to connect to BioMart...\n")
+  
+  # Try connecting to BioMart
+  mart <- tryCatch(
+    {
+      biomaRt::useEnsembl(biomart = "genes", dataset = "mmusculus_gene_ensembl")
+    },
+    error = function(e) {
+      cat("Error on attempt", attempt, ":", e$message, "\n")
+      NULL  # Return NULL if an error occurs
+    }
+  )
+  
+  # Add a small delay between attempts
+  if (is.null(mart)) Sys.sleep(5)
+}
+
+# Check if the connection was successful
+if (!is.null(mart)) {
+  cat("Successfully connected to BioMart after", attempt, "attempt(s)!\n")
+} else {
+  cat("Failed to connect to BioMart after", max_attempts, "attempt(s).\n")
+}
+rm(attempt)
+rm(max_attempts)
+```
+
+```{r}
+TOD_candidates_UTRs <- lapply(TOD_candidates, get_utrs)
+```
+
+
+```{r}
+jsonlite::write_json(TOD_candidates_UTRs, path = "/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/reference/translation_on_demand_candidates_UTRs.json")
+```
+

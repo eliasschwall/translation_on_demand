@@ -1,0 +1,565 @@
+```{r}
+library(SRAdb)
+library(Rsubread)
+
+# Define paths
+base_dir <- "/cellfile/cellnet/mESC_differentiation/translation_on_demand"
+star_path <- file.path(base_dir, "STAR-2.7.11b/source/STAR")
+reference_dir <- file.path(base_dir, "data/reference")
+mm11_dir <- file.path(reference_dir, "mm11")
+index_dir <- file.path(reference_dir, "star_index")
+fastq_dir <- file.path(base_dir, "data/raw/yang_raw_data/yang_fastq")
+
+# Create necessary directories (only need to do once)
+system(paste("mkdir -p", mm11_dir))
+system(paste("mkdir -p", index_dir))
+
+# Download and prepare reference genome (only need to do once)
+if(!file.exists(file.path(mm11_dir, "mm11.fa"))) {
+    download.file("https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M33/GRCm39.primary_assembly.genome.fa.gz",
+                  destfile = file.path(mm11_dir, "mm11.fa.gz"))
+    system(paste("gunzip", file.path(mm11_dir, "mm11.fa.gz")))
+}
+
+if(!file.exists(file.path(mm11_dir, "gencode.vM33.gtf"))) {
+    download.file("https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M33/gencode.vM33.annotation.gtf.gz",
+                  destfile = file.path(mm11_dir, "gencode.vM33.gtf.gz"))
+    system(paste("gunzip", file.path(mm11_dir, "gencode.vM33.gtf.gz")))
+}
+
+# Generate STAR index (only need to do once)
+if(length(list.files(index_dir)) == 0) {
+    star_cmd <- paste(star_path, "--runMode genomeGenerate",
+                     "--genomeDir", index_dir,
+                     "--genomeFastaFiles", file.path(mm11_dir, "mm11.fa"),
+                     "--sjdbGTFfile", file.path(mm11_dir, "gencode.vM33.gtf"),
+                     "--sjdbOverhang 50",  # read length - 1 (51-1=50)
+                     "--runThreadN 10",
+                     "--outTmpDir", "/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/reference/star_tmp")
+    system(star_cmd)
+}
+
+# Process each SRA file
+start_num <- 7624365
+end_num <- 7624380
+
+for(i in start_num:end_num) {
+    srr_id <- paste0("SRR", i)
+    gsm_id <- paste0("GSM", 3314677 + (i - start_num))  # Increment GSM ID accordingly
+    
+    cat(sprintf("\nProcessing %s (%s)...\n", srr_id, gsm_id))
+    
+    # Download SRA file
+    system(paste("prefetch", srr_id))
+    
+    # Convert to FASTQ
+    system(paste("fastq-dump --split-files", srr_id))
+    
+    # Check files were created
+    fastq_files <- list.files(pattern = srr_id)
+    if(length(fastq_files) > 0) {
+        cat("Created FASTQ files:", paste(fastq_files, collapse=", "), "\n")
+        
+        # Run STAR alignment
+        align_cmd <- paste(star_path,
+                          "--genomeDir", index_dir,
+                          "--readFilesIn", 
+                          file.path(fastq_dir, paste0(srr_id, "_1.fastq")),
+                          file.path(fastq_dir, paste0(srr_id, "_2.fastq")),
+                          "--outFileNamePrefix", paste0(gsm_id, "_"),
+                          "--outSAMtype BAM SortedByCoordinate",
+                          "--runThreadN 10",
+                          "--outFilterMismatchNmax 3",      # up to 3 mismatches
+                          "--outFilterMultimapNmax 1",      # only unique alignments
+                          "--alignIntronMax 100000",        # max intron length 100,000
+                          "--alignMatesGapMax 100000")      # for paired-end reads
+        
+        system(align_cmd)
+        cat("Completed alignment for", srr_id, "\n")
+    } else {
+        cat("ERROR: FASTQ files not created for", srr_id, "\n")
+    }
+}
+
+cat("\nProcessing complete!\n")
+```
+
+```{r Optimized version test}
+library(parallel)
+
+# First define the paths and create directories
+base_dir <- "/cellfile/cellnet/mESC_differentiation/translation_on_demand"
+star_path <- file.path(base_dir, "STAR-2.7.11b/source/STAR")
+reference_dir <- file.path(base_dir, "data/reference")
+mm11_dir <- file.path(reference_dir, "mm11")
+index_dir <- file.path(reference_dir, "star_index")
+fastq_dir <- file.path(base_dir, "data/raw/yang_raw_data/yang_fastq")
+output_dir <- file.path(base_dir, "STAR_alignment")
+
+# Create directories
+dir.create(mm11_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(index_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(fastq_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Download and prepare reference genome (only if not exists)
+if(!file.exists(file.path(mm11_dir, "mm11.fa"))) {
+    cat("Downloading reference genome...\n")
+    download.file("https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M33/GRCm39.primary_assembly.genome.fa.gz",
+                  destfile = file.path(mm11_dir, "mm11.fa.gz"), method = "wget", quiet = TRUE)
+    system(paste("pigz -d", file.path(mm11_dir, "mm11.fa.gz")))
+}
+
+if(!file.exists(file.path(mm11_dir, "gencode.vM33.gtf"))) {
+    cat("Downloading gene annotations...\n")
+    download.file("https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M33/gencode.vM33.annotation.gtf.gz",
+                  destfile = file.path(mm11_dir, "gencode.vM33.gtf.gz"), method = "wget", quiet = TRUE)
+    system(paste("pigz -d", file.path(mm11_dir, "gencode.vM33.gtf.gz")))
+}
+
+# Generate STAR index if needed
+if(!file.exists(file.path(index_dir, "genomeParameters.txt"))) {
+    cat("Generating STAR index...\n")
+    # Resource detection for STAR index generation
+    total_cores <- detectCores()
+    usable_cores <- max(1, floor(total_cores * 0.75))  
+    star_cores <- min(12, usable_cores)                
+    
+    mem_info <- system2("free", "-b", stdout = TRUE)
+    mem_values <- strsplit(mem_info[2], "\\s+")[[1]]
+    available_mem <- as.numeric(mem_values[7])
+    available_mem_gb <- round(available_mem / 1024^3, 2)
+    star_memory_gb <- min(40, floor(available_mem_gb * 0.75))
+    star_memory <- paste0("--limitBAMsortRAM ", star_memory_gb * 1024^3)
+    
+    star_cmd <- paste(star_path, "--runMode genomeGenerate",
+                     "--genomeDir", index_dir,
+                     "--genomeFastaFiles", file.path(mm11_dir, "mm11.fa"),
+                     "--sjdbGTFfile", file.path(mm11_dir, "gencode.vM33.gtf"),
+                     "--sjdbOverhang 50",
+                     "--runThreadN", star_cores,
+                     "--genomeSAindexNbases 14",
+                     star_memory)
+    
+    system(star_cmd)
+}
+
+# Function to process a single SRR
+process_single_srr <- function(srr_number) {
+    # Resource detection for alignment
+    total_cores <- detectCores()
+    usable_cores <- max(1, floor(total_cores * 0.75))  
+    star_cores <- min(12, usable_cores)                
+    
+    mem_info <- system2("free", "-b", stdout = TRUE)
+    mem_values <- strsplit(mem_info[2], "\\s+")[[1]]
+    available_mem <- as.numeric(mem_values[7])
+    available_mem_gb <- round(available_mem / 1024^3, 2)
+    star_memory_gb <- min(40, floor(available_mem_gb * 0.75))
+    star_memory <- paste0("--limitBAMsortRAM ", star_memory_gb * 1024^3)
+    
+    cat(sprintf("System Resources:\n"))
+    cat(sprintf("Total cores: %d, using %d for STAR\n", total_cores, star_cores))
+    cat(sprintf("Available memory: %.2f GB, allocating %d GB for STAR\n", 
+                available_mem_gb, star_memory_gb))
+    
+    # Optimized STAR parameters
+    star_buffer <- "--outBAMsortingBinsN 50"
+    
+    # Create SRR ID
+    srr_id <- paste0("SRR", srr_number)
+    cat(sprintf("\nProcessing %s\n", srr_id))
+    
+    # Define FASTQ file paths
+    fastq1 <- file.path(fastq_dir, paste0(srr_id, "_1.fastq"))
+    fastq2 <- file.path(fastq_dir, paste0(srr_id, "_2.fastq"))
+    
+    # Download FASTQ files if they don't exist
+    if(!file.exists(fastq1) || !file.exists(fastq2)) {
+        cat("Downloading FASTQ files for", srr_id, "\n")
+        
+        # First download SRA file
+        system(paste("prefetch", "--max-size 50G", srr_id))
+        
+        # Convert to FASTQ
+        system(paste("fastq-dump --split-files --outdir", 
+                    fastq_dir, srr_id))
+        
+        # Check if download was successful
+        if(!file.exists(fastq1) || !file.exists(fastq2)) {
+            cat("ERROR: FASTQ files download failed for", srr_id, "\n")
+            return(FALSE)
+        }
+    }
+    
+    # Run STAR alignment
+    cat("Running STAR alignment...\n")
+    align_cmd <- paste(star_path,
+                      "--genomeDir", index_dir,
+                      "--readFilesIn", fastq1, fastq2,
+                      "--outFileNamePrefix", file.path(output_dir, paste0(srr_id, "_")),
+                      "--outSAMtype BAM SortedByCoordinate",
+                      "--runThreadN", star_cores,
+                      "--outFilterMismatchNmax 3",
+                      "--outFilterMultimapNmax 1",
+                      "--alignIntronMax 100000",
+                      "--alignMatesGapMax 100000",
+                      star_memory,
+                      star_buffer)
+    
+    system(align_cmd)
+    
+    # Check if BAM file was created
+    bam_file <- file.path(output_dir, paste0(srr_id, "_Aligned.sortedByCoord.out.bam"))
+    if(file.exists(bam_file)) {
+        cat("\nSuccess! BAM file created:", bam_file, "\n")
+        return(TRUE)
+    } else {
+        cat("\nERROR: BAM file not created for", srr_id, "\n")
+        return(FALSE)
+    }
+}
+
+# Example usage:
+
+process_single_srr(7624375)
+
+```
+
+```{r Counting reads}
+library(Rsubread)
+
+# Define paths
+base_dir <- "/cellfile/cellnet/mESC_differentiation/translation_on_demand"
+bam_dir <- file.path(base_dir, "STAR_alignment")
+gtf_file <- file.path(base_dir, "data/reference/mm11/gencode.vM33.gtf")
+
+# Get all BAM files
+bam_files <- list.files(bam_dir, pattern="*Aligned.sortedByCoord.out.bam$", full.names=TRUE)
+print("Processing BAM files:")
+print(bam_files)
+
+# Create output directory for counts
+counts_dir <- file.path(base_dir, "counts")
+dir.create(counts_dir, recursive=TRUE, showWarnings=FALSE)
+
+# Index all BAM files if needed
+for(bam_file in bam_files) {
+    if(!file.exists(paste0(bam_file, ".bai"))) {
+        cat("Indexing", basename(bam_file), "...\n")
+        system(paste("samtools index", bam_file))
+    }
+}
+
+# Count reads using featureCounts
+cat("\nCounting reads...\n")
+fc_output <- featureCounts(files = bam_files,
+                          annot.ext = gtf_file,
+                          isGTFAnnotationFile = TRUE,
+                          GTF.featureType = "exon",
+                          GTF.attrType = "gene_id",
+                          useMetaFeatures = TRUE,
+                          allowMultiOverlap = FALSE,
+                          isPairedEnd = TRUE,
+                          countReadPairs = TRUE,
+                          nthreads = 8,
+                          verbose = TRUE)
+
+# Clean up column names to just SRR IDs
+colnames(fc_output$counts) <- gsub("_Aligned.sortedByCoord.out.bam", "", basename(bam_files))
+
+# Save raw counts
+write.csv(fc_output$counts, file=file.path(counts_dir, "all_samples_counts.csv"))
+
+# Save feature info and stats
+write.csv(fc_output$annotation, file=file.path(counts_dir, "gene_annotations.csv"))
+write.csv(fc_output$stat, file=file.path(counts_dir, "all_samples_statistics.csv"))
+
+# Print summary statistics
+print("\nTotal reads counted per sample:")
+print(colSums(fc_output$counts))
+print("\nNumber of detected genes (>0 counts) per sample:")
+print(colSums(fc_output$counts > 0))
+
+cat("\nAnalysis complete! Results saved in:", counts_dir, "\n")
+```
+
+
+```{r Creating metadata to assign correct timepoints}
+# Create sample info dataframe
+sample_info <- data.frame(
+    sample_id = colnames(counts_data),
+    time = rep(c(0,0, 1,1, 6,6, 12,12, 24,24, 36,36, 48,48, 72,72), 1),  # now including 36h
+    replicate = rep(1:2, 8)  # 8 pairs of replicates
+)
+
+# Print to verify
+print("Sample information table:")
+print(sample_info)
+
+# Add time as factor with correct order
+sample_info$time <- factor(sample_info$time, levels=c(0,1,6,12,24,36,48,72))
+
+# Save sample info
+write.csv(sample_info, file='/cellfile/cellnet/mESC_differentiation/translation_on_demand/counts/sample_metadata.csv', row.names=FALSE)
+```
+
+```{r DESeq2 QC}
+library(DESeq2)
+library(ggplot2)
+library(pheatmap)
+
+# Create results directory
+results_dir <- '/cellfile/cellnet/mESC_differentiation/translation_on_demand/results/yang_remapping_qc'
+dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Read data
+counts_data <- read.csv('/cellfile/cellnet/mESC_differentiation/translation_on_demand/counts/all_samples_counts.csv', row.names=1)
+sample_info <- read.csv('/cellfile/cellnet/mESC_differentiation/translation_on_demand/counts/sample_metadata.csv')
+
+# Print initial dimensions
+cat("\nInitial data dimensions:")
+cat("\nCounts matrix:", dim(counts_data)[1], "genes,", dim(counts_data)[2], "samples")
+
+# Create nicer sample names and show them
+sample_info$sample_name <- paste0(sample_info$time, "h_rep", sample_info$replicate)
+cat("\n\nSample names:")
+print(sample_info$sample_name)
+
+# Make time a factor
+sample_info$time <- factor(sample_info$time, levels=c(0,1,6,12,24,36,48,72))
+
+# Rename columns in counts data
+colnames(counts_data) <- sample_info$sample_name
+rownames(sample_info) <- sample_info$sample_name
+
+# Calculate and print library sizes
+lib_sizes <- colSums(counts_data)
+cat("\nLibrary sizes (millions of reads):\n")
+print(lib_sizes/1e6)
+
+# Create library size plot
+lib_size_plot <- ggplot(data.frame(sample=names(lib_sizes), size=lib_sizes/1e6), 
+                       aes(x=sample, y=size)) +
+    geom_bar(stat="identity") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("Library Sizes") +
+    ylab("Millions of reads") +
+    xlab("Sample")
+
+# Save library size plot
+ggsave(file.path(results_dir, 'library_sizes.pdf'), lib_size_plot, width=10, height=6)
+
+# Create DESeq object and filter
+dds <- DESeqDataSetFromMatrix(
+    countData = counts_data,
+    colData = sample_info,
+    design = ~ time)
+# Filter low count genes
+keep <- rowSums(counts(dds) >= 15) >= 2
+dds <- dds[keep,]
+cat("\n\nFiltering summary:")
+cat("\nKept", nrow(dds), "out of", nrow(counts_data), "genes after filtering")
+
+# Save the filtered counts
+filtered_counts <- counts(dds)
+write.csv(filtered_counts, '/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/raw/yang_raw_data/yang_m11_filtered_counts.csv')
+
+
+# Run DESeq2
+dds <- DESeq(dds)
+vsd <- vst(dds, blind=FALSE)
+
+# Create and save PCA plot
+pca_plot <- plotPCA(vsd, intgroup="time") +
+    ggtitle("PCA of samples by time point") +
+    theme_bw() +
+    theme(axis.text=element_text(size=12),
+          axis.title=element_text(size=14))
+ggsave(file.path(results_dir, 'PCA_plot.pdf'), pca_plot, width=8, height=6)
+
+# Create and save correlation heatmap
+sample_cors <- cor(assay(vsd))
+pdf(file.path(results_dir, 'correlation_heatmap.pdf'), width=10, height=8)
+pheatmap(sample_cors,
+         main="Sample Correlation Heatmap",
+         fontsize=8)
+dev.off()
+
+# Save comprehensive QC summary
+sink(file.path(results_dir, 'qc_summary.txt'))
+cat("QC SUMMARY\n")
+cat("==========\n\n")
+cat("1. Data Dimensions\n")
+cat("Initial genes:", nrow(counts_data), "\n")
+cat("Genes after filtering:", nrow(dds), "\n")
+cat("Number of samples:", ncol(dds), "\n\n")
+
+cat("2. Library Sizes\n")
+cat("Mean library size:", format(mean(lib_sizes), scientific=FALSE), "reads\n")
+cat("Median library size:", format(median(lib_sizes), scientific=FALSE), "reads\n")
+cat("Range:", format(min(lib_sizes), scientific=FALSE), "to", 
+    format(max(lib_sizes), scientific=FALSE), "reads\n\n")
+
+cat("3. Per Sample Summary\n")
+sample_summary <- data.frame(
+    Sample = names(lib_sizes),
+    Time = sample_info$time,
+    Replicate = sample_info$replicate,
+    Total_Reads = lib_sizes,
+    Detected_Genes = colSums(counts(dds) > 0)
+)
+print(sample_summary)
+sink()
+
+cat("\nQC analysis complete! Results saved in:", results_dir, "\n")
+
+# Additional QC for RNA-seq data
+library(DESeq2)
+library(ggplot2)
+library(reshape2)
+library(pheatmap)
+
+#################################################
+# 1. Gene Detection Rate
+#################################################
+# Shows percentage of genes detected in each sample
+# - Should be relatively consistent across samples
+# - Large differences might indicate sample quality issues
+# - Typically expect 50-70% genes detected in good samples
+detection_rate <- colSums(counts_data > 0) / nrow(counts_data) * 100
+detection_plot <- ggplot(data.frame(sample=names(detection_rate), rate=detection_rate), 
+   aes(x=sample, y=rate)) +
+   geom_bar(stat="identity") +
+   theme_bw() +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+   ggtitle("Gene Detection Rate per Sample") +
+   ylab("% Genes Detected")
+
+ggsave(file.path(results_dir, 'detection_rate.pdf'), detection_plot)
+
+#################################################
+# 2. Count Distribution
+#################################################
+# Shows distribution of expression values
+# - Should be similar shape across samples
+# - Bimodal distribution is common (low/unexpressed vs expressed genes)
+# - Outlier samples might show shifted distributions
+# Calculate log counts
+log_counts <- log2(counts_data + 1)
+
+# Convert to long format correctly
+melt_counts <- reshape2::melt(as.matrix(log_counts))
+colnames(melt_counts) <- c("gene", "sample", "value")
+
+# Create density plot
+density_plot <- ggplot(melt_counts, aes(x=value, color=sample)) +
+    geom_density() +
+    theme_bw() +
+    ggtitle("Distribution of Log2 Counts") +
+    xlab("Log2(counts + 1)") +
+    ylab("Density") +
+    theme(
+        legend.title = element_blank(),
+        legend.position = "right",
+        axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+
+# Save plot
+ggsave(file.path(results_dir, 'count_distribution.pdf'), 
+       density_plot, 
+       width = 10,  # Wider to accommodate legend
+       height = 6)
+
+#################################################
+# 3. Sample Clustering
+#################################################
+# Hierarchical clustering of samples
+# - Replicates should cluster together
+# - Adjacent time points should be more similar
+# - Outlier samples will appear as outlier branches
+dist_matrix <- dist(t(log_counts))
+hclust_result <- hclust(dist_matrix)
+pdf(file.path(results_dir, 'sample_clustering.pdf'))
+plot(hclust_result, main="Sample Clustering", xlab="")
+dev.off()
+
+#################################################
+# 4. Replicate Correlation
+#################################################
+# Correlation between technical replicates
+# - Should be high (typically >0.9)
+# - Lower correlation suggests technical issues
+# - Consistent correlation across time points is good
+replicate_cors <- sapply(unique(sample_info$time), function(t) {
+   reps <- rownames(sample_info)[sample_info$time == t]
+   cor(log_counts[,reps[1]], log_counts[,reps[2]])
+})
+names(replicate_cors) <- unique(sample_info$time)
+
+rep_cor_plot <- ggplot(data.frame(time=names(replicate_cors), correlation=replicate_cors), 
+   aes(x=time, y=correlation)) +
+   geom_bar(stat="identity") +
+   theme_bw() +
+   ggtitle("Replicate Correlations") +
+   ylim(0,1)
+
+ggsave(file.path(results_dir, 'replicate_correlations.pdf'), rep_cor_plot)
+
+#################################################
+# 5. MA Plots
+#################################################
+# Create DESeq object if not already done
+dds <- DESeqDataSetFromMatrix(
+   countData = counts_data,
+   colData = sample_info,
+   design = ~ time)
+
+# Filter low count genes as before
+keep <- rowSums(counts(dds) >= 10) >= 2
+dds <- dds[keep,]
+dds <- DESeq(dds)
+
+# MA plots for each time point vs 0h
+# - Shows relationship between mean expression and log fold changes
+# - Should be roughly symmetric around y=0
+# - Most genes should not change (points around y=0)
+# - Red points show significantly DE genes
+pdf(file.path(results_dir, 'MA_plots.pdf'))
+for(t in c("1","6","12","24","36","48","72")) {
+   res <- results(dds, contrast=c("time", t, "0"))
+   plotMA(res, main=paste0(t, "h vs 0h"))
+}
+dev.off()
+
+#################################################
+# 6. Dispersion Estimates
+#################################################
+# Shows variance structure of the data
+# - Red line should show clear trend
+# - Black points should follow trend
+# - Blue points are outliers
+# - Helps validate negative binomial model assumption
+pdf(file.path(results_dir, 'dispersion_plot.pdf'))
+plotDispEsts(dds)
+dev.off()
+
+# Save summary statistics
+sink(file.path(results_dir, 'extended_qc_summary.txt'))
+cat("Extended QC Summary\n")
+cat("==================\n\n")
+
+cat("1. Gene Detection Rates\n")
+cat("----------------------\n")
+print(detection_rate)
+cat("\n")
+
+cat("2. Replicate Correlations\n")
+cat("------------------------\n")
+print(replicate_cors)
+cat("\n")
+
+sink()
+```
+

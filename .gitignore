@@ -3,3 +3,12 @@ data/
 .Rdata
 .Rhistory
 .png
+.Rproj.user
+.pdf
+SRA_Toolkit/
+STAR-2.7.11b/
+.tar
+tmp/
+STAR_alignment/
+counts/
+.csv
