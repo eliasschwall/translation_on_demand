@@ -43,3 +43,25 @@ summary(mm11_transcirpt_data)
 rownames(mm9_transcipt_data) %in% rownames(mm11_transcirpt_data) %>% table()
 ```
 
+
+```{r}
+#| label: count distribution of old data
+
+old_count_data_log2 <- read.csv("../data/mm9/processed/transcriptomic_data_cleaned.csv", row.names = 1) %>% 
+  dplyr::select(-GeneID) %>% 
+  mutate(across(everything(), ~ log2(. + 1)))
+
+# Convert the data to long format for ggplot
+long_data <- old_count_data_log2 %>%
+    pivot_longer(everything(), names_to = "Variable", values_to = "Value")
+
+# Create the density plot
+ggplot(long_data, aes(x = Value, fill = Variable)) +
+    geom_density(alpha = 0.2) +  
+    labs(title = "Density Plot of Log2 Transformed Data",
+         x = "Log2(Count + 1)",
+         y = "Density") +
+    theme_minimal() +
+    theme(legend.position = "right")
+```
+

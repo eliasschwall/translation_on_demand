@@ -1,4 +1,6 @@
 ```{r}
+setwd("/cellfile/cellnet/mESC_differentiation/translation_on_demand")
+
 library(SRAdb)
 library(Rsubread)
 
@@ -220,7 +222,7 @@ process_single_srr <- function(srr_number) {
     }
 }
 
-# Example usage:
+# Example usage (change for each file):
 
 process_single_srr(7624375)
 
@@ -232,9 +234,11 @@ library(Rsubread)
 # Define paths
 base_dir <- "/cellfile/cellnet/mESC_differentiation/translation_on_demand"
 bam_dir <- file.path(base_dir, "STAR_alignment")
-gtf_file <- file.path(base_dir, "data/reference/mm11/gencode.vM33.gtf")
+reference_dir <- file.path(base_dir, "data/mm9/reference")
+mm11_dir <- file.path(reference_dir, "mm11")
+gtf_file <- file.path(mm11_dir, "gencode.vM33.gtf")
 
-# Get all BAM files
+# Get BAM files
 bam_files <- list.files(bam_dir, pattern="*Aligned.sortedByCoord.out.bam$", full.names=TRUE)
 print("Processing BAM files:")
 print(bam_files)
@@ -286,14 +290,19 @@ cat("\nAnalysis complete! Results saved in:", counts_dir, "\n")
 
 
 ```{r Creating metadata to assign correct timepoints}
+# Load the counts data
+counts_data <- read.csv(file.path(counts_dir, "all_samples_counts.csv"), row.names=1)
+
 # Create sample info dataframe
 sample_info <- data.frame(
-    sample_id = colnames(counts_data),
-    time = rep(c(0,0, 1,1, 6,6, 12,12, 24,24, 36,36, 48,48, 72,72), 1),  # now including 36h
-    replicate = rep(1:2, 8)  # 8 pairs of replicates
+   sample_id = colnames(counts_data),
+   time = rep(c(0,0, 1,1, 6,6, 12,12, 24,24, 36,36, 48,48, 72,72), 1),
+   replicate = rep(1:2, 8)  
 )
 
-# Print to verify
+# Add time as factor with correct order
+sample_info$time <- factor(sample_info$time, levels=c(0,1,6,12,24,36,48,72))
+
 print("Sample information table:")
 print(sample_info)
 
@@ -304,90 +313,323 @@ sample_info$time <- factor(sample_info$time, levels=c(0,1,6,12,24,36,48,72))
 write.csv(sample_info, file='/cellfile/cellnet/mESC_differentiation/translation_on_demand/counts/sample_metadata.csv', row.names=FALSE)
 ```
 
-```{r DESeq2 QC}
+
+```{r Mapping to mgi}
+library(biomaRt)
+library(dplyr)
+library(tibble)
+
+# Function to strip version numbers from Ensembl IDs
+strip_version <- function(ids) {
+    gsub("\\.[0-9]+$", "", ids)
+}
+
+# First, create a dataframe with counts and handle versioning
+counts_with_names <- counts_data %>%
+    as.data.frame() %>%
+    tibble::rownames_to_column("original_id") %>%
+    # Add version number and base ID columns
+    mutate(
+        version = as.numeric(gsub(".*\\.", "", original_id)),
+        ensembl_base = strip_version(original_id)
+    ) %>%
+    # Group by base ID and keep highest version
+    group_by(ensembl_base) %>%
+    slice_max(version) %>%
+    ungroup()
+
+# Connect to Ensembl 
+ensembl <- useMart("ensembl", 
+                   dataset = "mmusculus_gene_ensembl")
+
+# Retrieve gene ID mappings
+biomart <- getBM(attributes = c("ensembl_gene_id", "gene_biotype", "mgi_symbol"),
+                 mart = ensembl)
+
+# Now join with biomart data
+counts_with_names <- counts_with_names %>%
+    left_join(biomart, by = c("ensembl_base" = "ensembl_gene_id"))
+
+# Handle duplicate MGI symbols by keeping highest expressed version
+counts_with_names <- counts_with_names %>%
+    group_by(mgi_symbol) %>%
+    mutate(total_counts = rowSums(across(matches("^\\d+h_rep\\d+$")))) %>%
+    slice_max(total_counts, with_ties = FALSE) %>%
+    ungroup() %>%
+    dplyr::select(-total_counts)  # Remove the temporary counting column
+
+# Create final counts_data 
+counts_data <- counts_with_names
+
+# Print summary
+cat("\nMapping summary:\n")
+cat("Original genes:", nrow(counts_data), "\n")
+cat("Genes with MGI symbols:", sum(!is.na(counts_data$mgi_symbol)), "\n")
+
+# Look at first few rows to verify
+print(head(counts_data[,c("original_id", "ensembl_base", "version", "mgi_symbol", "gene_biotype")]))
+
+# Save annotated counts data to CSV
+write.csv(counts_data, "/cellfile/cellnet/mESC_differentiation/translation_on_demand/counts/mm11_counts_mgi.csv", row.names = FALSE)
+
+cat("\nSaved annotated counts to: /cellfile/cellnet/mESC_differentiation/translation_on_demand/counts/mm11_counts_mgi.csv\n")
+```
+
+
+```{r Processing counts data and filtering}
 library(DESeq2)
 library(ggplot2)
 library(pheatmap)
+library(reshape2)
+library(dplyr)
 
 # Create results directory
 results_dir <- '/cellfile/cellnet/mESC_differentiation/translation_on_demand/results/yang_remapping_qc'
 dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
 # Read data
-counts_data <- read.csv('/cellfile/cellnet/mESC_differentiation/translation_on_demand/counts/all_samples_counts.csv', row.names=1)
+counts_data <- read.csv('/cellfile/cellnet/mESC_differentiation/translation_on_demand/counts/mm11_counts_mgi.csv')
 sample_info <- read.csv('/cellfile/cellnet/mESC_differentiation/translation_on_demand/counts/sample_metadata.csv')
+
+# Keep only the columns we want (annotation + count columns)
+counts_data <- counts_data %>%
+    dplyr::select(mgi_symbol, ensembl_base, gene_biotype, matches("^X\\d+h_rep\\d+$"))
 
 # Print initial dimensions
 cat("\nInitial data dimensions:")
 cat("\nCounts matrix:", dim(counts_data)[1], "genes,", dim(counts_data)[2], "samples")
 
-# Create nicer sample names and show them
-sample_info$sample_name <- paste0(sample_info$time, "h_rep", sample_info$replicate)
-cat("\n\nSample names:")
-print(sample_info$sample_name)
+# Filter the counts_data
+filtered_counts <- counts_data %>%
+    # Filter for rows with mgi_symbol
+    filter(!is.na(mgi_symbol) & mgi_symbol != "") %>%
+    # Filter for protein_coding
+    filter(gene_biotype == "protein_coding") %>%
+    # Filter for counts >10 in at least 2 timepoint columns
+    filter(rowSums(dplyr::select(., matches("^X\\d+h_rep\\d+$")) > 10) >= 2)
 
-# Make time a factor
+# Print filtering steps one at a time
+cat("\nFiltering summary:\n")
+cat("Original rows:", nrow(counts_data), "\n")
+
+# First - count genes with MGI symbols
+mgi_filtered <- counts_data %>%
+    filter(!is.na(mgi_symbol) & mgi_symbol != "")
+cat("After MGI symbol filter:", nrow(mgi_filtered), "\n")
+
+# Second - count protein coding
+protein_filtered <- mgi_filtered %>%
+    filter(gene_biotype == "protein_coding")
+cat("After protein coding filter:", nrow(protein_filtered), "\n")
+
+# Finally - count expression filtered
+final_filtered <- protein_filtered %>%
+    filter(rowSums(dplyr::select(., matches("^X\\d+h_rep\\d+$")) > 10) >= 2)
+cat("After expression filter:", nrow(final_filtered), "\n")
+
+# Update counts_data and prepare for DESeq2
+count_columns <- grep("^X\\d+h_rep\\d+$", colnames(filtered_counts), value=TRUE)
+count_matrix <- filtered_counts[, count_columns]
+colnames(count_matrix) <- sub("^X", "", colnames(count_matrix))
+rownames(count_matrix) <- filtered_counts$mgi_symbol
+
+# Final counts_data ready for QC
+counts_data <- count_matrix
+
+# Create sample names and make time a factor
+sample_info$sample_name <- paste0(sample_info$time, "h_rep", sample_info$replicate)
 sample_info$time <- factor(sample_info$time, levels=c(0,1,6,12,24,36,48,72))
 
-# Rename columns in counts data
+# Rename columns in counts data to match sample info
 colnames(counts_data) <- sample_info$sample_name
 rownames(sample_info) <- sample_info$sample_name
 
-# Calculate and print library sizes
+# Save filtered annotations for later use
+gene_info <- filtered_counts %>%
+    dplyr::select(mgi_symbol, ensembl_base, gene_biotype)
+
+# Print final dimensions
+cat("\nFinal data dimensions:")
+cat("\nCounts matrix:", dim(counts_data)[1], "genes,", dim(counts_data)[2], "samples")
+
+# Save filtered count matrix
+write.csv(counts_data, file.path(results_dir, "filtered_counts_matrix.csv"))
+
+# Save gene annotations
+write.csv(gene_info, file.path(results_dir, "filtered_gene_annotations.csv"), row.names = FALSE)
+
+cat("\nSaved files:")
+cat("\nCount matrix:", file.path(results_dir, "filtered_counts_matrix.csv"))
+cat("\nGene annotations:", file.path(results_dir, "filtered_gene_annotations.csv"))
+```
+
+
+
+
+```{r Deseq2 QC}
+# Create results directory
+results_dir <- '/cellfile/cellnet/mESC_differentiation/translation_on_demand/results/yang_remapping_qc'
+dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Create sample info from column names
+sample_names <- colnames(counts_data)
+time_points <- as.numeric(sub("h_rep\\d+$", "", sample_names))
+replicates <- as.numeric(sub(".*rep", "", sample_names))
+
+sample_info <- data.frame(
+   sample_name = sample_names,
+   time = time_points,
+   replicate = replicates,
+   row.names = sample_names
+)
+
+# Make time a factor with correct levels
+sample_info$time <- factor(sample_info$time, levels=c(0,1,6,12,24,36,48,72))
+
+# Calculate library sizes
 lib_sizes <- colSums(counts_data)
 cat("\nLibrary sizes (millions of reads):\n")
 print(lib_sizes/1e6)
 
 # Create library size plot
 lib_size_plot <- ggplot(data.frame(sample=names(lib_sizes), size=lib_sizes/1e6), 
-                       aes(x=sample, y=size)) +
-    geom_bar(stat="identity") +
-    theme_bw() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    ggtitle("Library Sizes") +
-    ylab("Millions of reads") +
-    xlab("Sample")
-
-# Save library size plot
+                     aes(x=sample, y=size)) +
+  geom_bar(stat="identity") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggtitle("Library Sizes") +
+  ylab("Millions of reads") +
+  xlab("Sample")
 ggsave(file.path(results_dir, 'library_sizes.pdf'), lib_size_plot, width=10, height=6)
 
 # Create DESeq object and filter
 dds <- DESeqDataSetFromMatrix(
-    countData = counts_data,
-    colData = sample_info,
-    design = ~ time)
+  countData = counts_data,
+  colData = sample_info,
+  design = ~ time)
+
 # Filter low count genes
-keep <- rowSums(counts(dds) >= 15) >= 2
+keep <- rowSums(counts(dds) >= 10) >= 2
 dds <- dds[keep,]
 cat("\n\nFiltering summary:")
 cat("\nKept", nrow(dds), "out of", nrow(counts_data), "genes after filtering")
-
-# Save the filtered counts
-filtered_counts <- counts(dds)
-write.csv(filtered_counts, '/cellfile/cellnet/mESC_differentiation/translation_on_demand/data/raw/yang_raw_data/yang_m11_filtered_counts.csv')
-
 
 # Run DESeq2
 dds <- DESeq(dds)
 vsd <- vst(dds, blind=FALSE)
 
+# Distribution plots
+# Raw counts with log10 scale
+raw_melt <- melt(as.matrix(counts(dds)))
+colnames(raw_melt) <- c("gene", "sample", "count")
+raw_density <- ggplot(raw_melt, aes(x=count, color=sample)) +
+  geom_density() +
+  theme_bw() +
+  scale_x_log10() +
+  ggtitle("Raw Counts Distribution (log10 scale)") +
+  xlab("Count (log10 scale)") +
+  ylab("Density") +
+  theme(legend.position="none")
+ggsave(file.path(results_dir, 'raw_counts_dist.pdf'), raw_density)
+
+# Log2 raw counts
+log2_melt <- melt(as.matrix(log2(counts(dds) + 1)))
+colnames(log2_melt) <- c("gene", "sample", "count")
+log2_density <- ggplot(log2_melt, aes(x=count, color=sample)) +
+  geom_density() +
+  theme_bw() +
+  ggtitle("Log2-transformed Raw Counts") +
+  xlab("Log2(count + 1)") +
+  ylab("Density") +
+  theme(legend.position="right")
+ggsave(file.path(results_dir, 'log2_counts_dist.pdf'), log2_density)
+
+# DESeq2 normalized counts
+normalized_counts <- counts(dds, normalized=TRUE)
+norm_log2_melt <- melt(as.matrix(log2(normalized_counts + 1)))
+colnames(norm_log2_melt) <- c("gene", "sample", "count")
+norm_density <- ggplot(norm_log2_melt, aes(x=count, color=sample)) +
+  geom_density() +
+  theme_bw() +
+  ggtitle("Log2-transformed DESeq2 Normalized Counts") +
+  xlab("Log2(normalized count + 1)") +
+  ylab("Density") +
+  theme(legend.position="none")
+ggsave(file.path(results_dir, 'normalized_counts_dist.pdf'), norm_density)
+
+# Add diagnostic prints to check normalization
+cat("\nSize factors:\n")
+print(sizeFactors(dds))
+
+cat("\nSummary of raw counts:\n")
+print(summary(counts(dds)))
+
+cat("\nSummary of normalized counts:\n")
+print(summary(normalized_counts))
+
 # Create and save PCA plot
 pca_plot <- plotPCA(vsd, intgroup="time") +
-    ggtitle("PCA of samples by time point") +
-    theme_bw() +
-    theme(axis.text=element_text(size=12),
-          axis.title=element_text(size=14))
+  ggtitle("PCA of samples by time point") +
+  theme_bw() +
+  theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14))
 ggsave(file.path(results_dir, 'PCA_plot.pdf'), pca_plot, width=8, height=6)
 
 # Create and save correlation heatmap
 sample_cors <- cor(assay(vsd))
 pdf(file.path(results_dir, 'correlation_heatmap.pdf'), width=10, height=8)
 pheatmap(sample_cors,
-         main="Sample Correlation Heatmap",
-         fontsize=8)
+       main="Sample Correlation Heatmap",
+       fontsize=8)
 dev.off()
 
-# Save comprehensive QC summary
+# Gene Detection Rate
+detection_rate <- colSums(counts(dds) > 0) / nrow(dds) * 100
+detection_plot <- ggplot(data.frame(sample=names(detection_rate), rate=detection_rate), 
+ aes(x=sample, y=rate)) +
+ geom_bar(stat="identity") +
+ theme_bw() +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+ ggtitle("Gene Detection Rate per Sample") +
+ ylab("% Genes Detected")
+ggsave(file.path(results_dir, 'detection_rate.pdf'), detection_plot)
+
+# Sample Clustering
+dist_matrix <- dist(t(assay(vsd)))
+hclust_result <- hclust(dist_matrix)
+pdf(file.path(results_dir, 'sample_clustering.pdf'))
+plot(hclust_result, main="Sample Clustering", xlab="")
+dev.off()
+
+# Replicate Correlation
+replicate_cors <- sapply(unique(sample_info$time), function(t) {
+ reps <- rownames(sample_info)[sample_info$time == t]
+ cor(assay(vsd)[,reps[1]], assay(vsd)[,reps[2]])
+})
+names(replicate_cors) <- unique(sample_info$time)
+
+rep_cor_plot <- ggplot(data.frame(time=names(replicate_cors), correlation=replicate_cors), 
+ aes(x=time, y=correlation)) +
+ geom_bar(stat="identity") +
+ theme_bw() +
+ ggtitle("Replicate Correlations") +
+ ylim(0,1)
+ggsave(file.path(results_dir, 'replicate_correlations.pdf'), rep_cor_plot)
+
+# MA plots
+pdf(file.path(results_dir, 'MA_plots.pdf'))
+for(t in c("1","6","12","24","36","48","72")) {
+ res <- results(dds, contrast=c("time", t, "0"))
+ plotMA(res, main=paste0(t, "h vs 0h"))
+}
+dev.off()
+
+# Dispersion Estimates
+pdf(file.path(results_dir, 'dispersion_plot.pdf'))
+plotDispEsts(dds)
+dev.off()
+
+# Save summary statistics
 sink(file.path(results_dir, 'qc_summary.txt'))
 cat("QC SUMMARY\n")
 cat("==========\n\n")
@@ -400,166 +642,232 @@ cat("2. Library Sizes\n")
 cat("Mean library size:", format(mean(lib_sizes), scientific=FALSE), "reads\n")
 cat("Median library size:", format(median(lib_sizes), scientific=FALSE), "reads\n")
 cat("Range:", format(min(lib_sizes), scientific=FALSE), "to", 
-    format(max(lib_sizes), scientific=FALSE), "reads\n\n")
+  format(max(lib_sizes), scientific=FALSE), "reads\n\n")
 
 cat("3. Per Sample Summary\n")
 sample_summary <- data.frame(
-    Sample = names(lib_sizes),
-    Time = sample_info$time,
-    Replicate = sample_info$replicate,
-    Total_Reads = lib_sizes,
-    Detected_Genes = colSums(counts(dds) > 0)
+  Sample = names(lib_sizes),
+  Time = sample_info$time,
+  Replicate = sample_info$replicate,
+  Total_Reads = lib_sizes,
+  Detected_Genes = colSums(counts(dds) > 0)
 )
 print(sample_summary)
+
+cat("\n4. Replicate Correlations\n")
+print(replicate_cors)
 sink()
 
 cat("\nQC analysis complete! Results saved in:", results_dir, "\n")
+```
 
-# Additional QC for RNA-seq data
-library(DESeq2)
+```{r TPMs}
+library(biomaRt)
+library(dplyr)
+library(GenomicRanges)
+
+# Read our filtered counts
+counts_data <- read.csv(file.path(results_dir, "filtered_counts_matrix.csv"), row.names=1)
+gene_info <- read.csv(file.path(results_dir, "filtered_gene_annotations.csv"))
+
+# Connect to Ensembl 
+ensembl <- useMart("ensembl", 
+                   dataset = "mmusculus_gene_ensembl")
+
+# Get exon information for our genes
+exon_data <- getBM(
+    attributes = c("ensembl_gene_id", "exon_chrom_start", "exon_chrom_end"),
+    filters = "ensembl_gene_id",
+    values = gene_info$ensembl_base,
+    mart = ensembl
+)
+
+# Calculate exon lengths avoiding overlaps
+exon_lengths <- lapply(split(exon_data, exon_data$ensembl_gene_id), function(gene_exons) {
+    # Create GRanges object for the exons
+    gr <- GRanges(
+        seqnames = rep("1", nrow(gene_exons)),  # chromosome doesn't matter for length
+        ranges = IRanges(start = gene_exons$exon_chrom_start,
+                        end = gene_exons$exon_chrom_end)
+    )
+    # Merge overlapping exons and sum lengths
+    sum(width(reduce(gr)))
+})
+
+# Convert to data frame
+gene_lengths <- data.frame(
+    ensembl_id = names(exon_lengths),
+    length = unlist(exon_lengths)
+)
+
+# Merge lengths with gene info to get MGI symbols
+gene_lengths <- gene_lengths %>%
+    inner_join(gene_info, by = c("ensembl_id" = "ensembl_base"))
+
+# Calculate TPMs
+calculate_tpm <- function(counts, lengths) {
+    # Rate = counts / length
+    rate <- sweep(counts, 1, lengths, "/")
+    # TPM = rate / sum(rate) * 1e6
+    tpm <- sweep(rate, 2, colSums(rate), "/") * 1e6
+    return(tpm)
+}
+
+# Ensure genes match between counts and lengths
+common_genes <- intersect(rownames(counts_data), gene_lengths$mgi_symbol)
+counts_subset <- counts_data[common_genes,]
+lengths_subset <- gene_lengths$length[match(common_genes, gene_lengths$mgi_symbol)]
+
+# Calculate TPMs
+tpm_matrix <- calculate_tpm(as.matrix(counts_subset), lengths_subset)
+rownames(tpm_matrix) <- common_genes
+
+# Save TPM matrix
+write.csv(tpm_matrix, file.path(results_dir, "gene_TPMs.csv"))
+
+# Print summary
+cat("\nTPM calculation summary:\n")
+cat("Number of genes with length data:", nrow(gene_lengths), "\n")
+cat("Number of genes in final TPM matrix:", nrow(tpm_matrix), "\n")
+cat("TPM matrix saved to:", file.path(results_dir, "gene_TPMs.csv"), "\n")
+
+# Quick validation
+cat("\nTPM column sums (should be close to 1e6):\n")
+print(colSums(tpm_matrix))
+```
+
+```{r TPM QC}
 library(ggplot2)
-library(reshape2)
 library(pheatmap)
+library(reshape2)
+library(tidyr)
 
-#################################################
-# 1. Gene Detection Rate
-#################################################
-# Shows percentage of genes detected in each sample
-# - Should be relatively consistent across samples
-# - Large differences might indicate sample quality issues
-# - Typically expect 50-70% genes detected in good samples
-detection_rate <- colSums(counts_data > 0) / nrow(counts_data) * 100
-detection_plot <- ggplot(data.frame(sample=names(detection_rate), rate=detection_rate), 
-   aes(x=sample, y=rate)) +
-   geom_bar(stat="identity") +
-   theme_bw() +
-   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-   ggtitle("Gene Detection Rate per Sample") +
-   ylab("% Genes Detected")
+# Create TPM QC directory
+tpm_qc_dir <- file.path(results_dir, 'tpm_qc')
+dir.create(tpm_qc_dir, recursive = TRUE, showWarnings = FALSE)
 
-ggsave(file.path(results_dir, 'detection_rate.pdf'), detection_plot)
+# 1. Distribution plots
+# Log2 TPM distribution
+tpm_melt <- melt(as.matrix(tpm_matrix))
+colnames(tpm_melt) <- c("gene", "sample", "TPM")
 
-#################################################
-# 2. Count Distribution
-#################################################
-# Shows distribution of expression values
-# - Should be similar shape across samples
-# - Bimodal distribution is common (low/unexpressed vs expressed genes)
-# - Outlier samples might show shifted distributions
-# Calculate log counts
-log_counts <- log2(counts_data + 1)
-
-# Convert to long format correctly
-melt_counts <- reshape2::melt(as.matrix(log_counts))
-colnames(melt_counts) <- c("gene", "sample", "value")
-
-# Create density plot
-density_plot <- ggplot(melt_counts, aes(x=value, color=sample)) +
+# Density plot
+tpm_density <- ggplot(tpm_melt, aes(x=log2(TPM + 1), color=sample)) +
     geom_density() +
     theme_bw() +
-    ggtitle("Distribution of Log2 Counts") +
-    xlab("Log2(counts + 1)") +
+    ggtitle("Log2 TPM Distribution") +
+    xlab("Log2(TPM + 1)") +
     ylab("Density") +
-    theme(
-        legend.title = element_blank(),
-        legend.position = "right",
-        axis.text.x = element_text(angle = 45, hjust = 1)
+    theme(legend.position="none")
+ggsave(file.path(tpm_qc_dir, 'tpm_distribution.pdf'), tpm_density)
+
+# 2. Box plots
+tpm_boxplot <- ggplot(tpm_melt, aes(x=sample, y=log2(TPM + 1))) +
+    geom_boxplot() +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("TPM Distribution by Sample") +
+    ylab("Log2(TPM + 1)")
+ggsave(file.path(tpm_qc_dir, 'tpm_boxplot.pdf'), tpm_boxplot)
+
+# 3. Expression level categories
+expression_categories <- function(tpm) {
+    case_when(
+        tpm == 0 ~ "Not expressed",
+        tpm < 1 ~ "Low (<1)",
+        tpm < 10 ~ "Medium (1-10)",
+        tpm < 100 ~ "High (10-100)",
+        TRUE ~ "Very high (>100)"
     )
-
-# Save plot
-ggsave(file.path(results_dir, 'count_distribution.pdf'), 
-       density_plot, 
-       width = 10,  # Wider to accommodate legend
-       height = 6)
-
-#################################################
-# 3. Sample Clustering
-#################################################
-# Hierarchical clustering of samples
-# - Replicates should cluster together
-# - Adjacent time points should be more similar
-# - Outlier samples will appear as outlier branches
-dist_matrix <- dist(t(log_counts))
-hclust_result <- hclust(dist_matrix)
-pdf(file.path(results_dir, 'sample_clustering.pdf'))
-plot(hclust_result, main="Sample Clustering", xlab="")
-dev.off()
-
-#################################################
-# 4. Replicate Correlation
-#################################################
-# Correlation between technical replicates
-# - Should be high (typically >0.9)
-# - Lower correlation suggests technical issues
-# - Consistent correlation across time points is good
-replicate_cors <- sapply(unique(sample_info$time), function(t) {
-   reps <- rownames(sample_info)[sample_info$time == t]
-   cor(log_counts[,reps[1]], log_counts[,reps[2]])
-})
-names(replicate_cors) <- unique(sample_info$time)
-
-rep_cor_plot <- ggplot(data.frame(time=names(replicate_cors), correlation=replicate_cors), 
-   aes(x=time, y=correlation)) +
-   geom_bar(stat="identity") +
-   theme_bw() +
-   ggtitle("Replicate Correlations") +
-   ylim(0,1)
-
-ggsave(file.path(results_dir, 'replicate_correlations.pdf'), rep_cor_plot)
-
-#################################################
-# 5. MA Plots
-#################################################
-# Create DESeq object if not already done
-dds <- DESeqDataSetFromMatrix(
-   countData = counts_data,
-   colData = sample_info,
-   design = ~ time)
-
-# Filter low count genes as before
-keep <- rowSums(counts(dds) >= 10) >= 2
-dds <- dds[keep,]
-dds <- DESeq(dds)
-
-# MA plots for each time point vs 0h
-# - Shows relationship between mean expression and log fold changes
-# - Should be roughly symmetric around y=0
-# - Most genes should not change (points around y=0)
-# - Red points show significantly DE genes
-pdf(file.path(results_dir, 'MA_plots.pdf'))
-for(t in c("1","6","12","24","36","48","72")) {
-   res <- results(dds, contrast=c("time", t, "0"))
-   plotMA(res, main=paste0(t, "h vs 0h"))
 }
+
+expression_summary <- apply(tpm_matrix, 2, function(x) {
+    table(expression_categories(x))
+})
+
+expression_df <- as.data.frame(expression_summary)
+expression_df$Category <- rownames(expression_df)
+expression_long <- pivot_longer(expression_df, 
+                              cols = -Category, 
+                              names_to = "Sample", 
+                              values_to = "Count")
+
+# Stacked bar plot of expression categories
+exp_categories_plot <- ggplot(expression_long, 
+                            aes(x=Sample, y=Count, fill=Category)) +
+    geom_bar(stat="identity") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    ggtitle("Gene Expression Categories by Sample") +
+    ylab("Number of Genes")
+ggsave(file.path(tpm_qc_dir, 'expression_categories.pdf'), exp_categories_plot)
+
+# 4. Sample correlation heatmap
+sample_cors <- cor(tpm_matrix)
+pdf(file.path(tpm_qc_dir, 'tpm_correlation_heatmap.pdf'), width=10, height=8)
+pheatmap(sample_cors,
+         main="Sample Correlation Heatmap (TPM)",
+         fontsize=8)
 dev.off()
 
-#################################################
-# 6. Dispersion Estimates
-#################################################
-# Shows variance structure of the data
-# - Red line should show clear trend
-# - Black points should follow trend
-# - Blue points are outliers
-# - Helps validate negative binomial model assumption
-pdf(file.path(results_dir, 'dispersion_plot.pdf'))
-plotDispEsts(dds)
-dev.off()
+# 5. PCA of TPM values
+pca_result <- prcomp(t(log2(tpm_matrix + 1)))
+pca_data <- data.frame(
+    PC1 = pca_result$x[,1],
+    PC2 = pca_result$x[,2],
+    Sample = colnames(tpm_matrix)
+)
+pca_data$TimePoint <- sub("h_rep.*", "", pca_data$Sample)
 
-# Save summary statistics
-sink(file.path(results_dir, 'extended_qc_summary.txt'))
-cat("Extended QC Summary\n")
-cat("==================\n\n")
+pca_plot <- ggplot(pca_data, aes(x=PC1, y=PC2, color=TimePoint, label=Sample)) +
+    geom_point(size=3) +
+    theme_bw() +
+    ggtitle("PCA of TPM Values") +
+    xlab(paste0("PC1 (", round(summary(pca_result)$importance[2,1]*100, 1), "%)")) +
+    ylab(paste0("PC2 (", round(summary(pca_result)$importance[2,2]*100, 1), "%)"))
+ggsave(file.path(tpm_qc_dir, 'tpm_pca.pdf'), pca_plot)
 
-cat("1. Gene Detection Rates\n")
-cat("----------------------\n")
-print(detection_rate)
-cat("\n")
+# 6. Summary statistics
+sink(file.path(tpm_qc_dir, 'tpm_summary.txt'))
+cat("TPM SUMMARY STATISTICS\n")
+cat("=====================\n\n")
 
-cat("2. Replicate Correlations\n")
-cat("------------------------\n")
-print(replicate_cors)
-cat("\n")
+cat("1. Data Dimensions\n")
+cat("Number of genes:", nrow(tpm_matrix), "\n")
+cat("Number of samples:", ncol(tpm_matrix), "\n\n")
+
+cat("2. Expression Level Summary\n")
+print(expression_summary)
+
+cat("\n3. Per Sample Statistics\n")
+sample_stats <- apply(tpm_matrix, 2, function(x) {
+    c(Mean = mean(x),
+      Median = median(x),
+      SD = sd(x),
+      Q1 = quantile(x, 0.25),
+      Q3 = quantile(x, 0.75),
+      Detected = sum(x > 0))
+})
+print(round(sample_stats, 2))
+
+cat("\n4. Correlation Summary\n")
+cor_summary <- cor(tpm_matrix)
+cat("Minimum correlation between samples:", round(min(cor_summary[upper.tri(cor_summary)]), 3), "\n")
+cat("Maximum correlation between samples:", round(max(cor_summary[upper.tri(cor_summary)]), 3), "\n")
+cat("Mean correlation between samples:", round(mean(cor_summary[upper.tri(cor_summary)]), 3), "\n")
 
 sink()
+
+# Save TPM matrix in QC directory
+write.csv(tpm_matrix, file.path(tpm_qc_dir, "gene_TPMs.csv"))
+
+cat("\nTPM QC analysis complete! Results saved in:", tpm_qc_dir, "\n")
 ```
+
+
+
+
+
+
+
 

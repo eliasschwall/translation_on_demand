@@ -1,0 +1,77 @@
+---
+title: "10 DESeq Analysis"
+author: Elias
+format: html
+---
+
+```{r}
+#| label: loading data and generating meta data 
+
+count_data <- read.csv("../data/mm11/raw/yang_raw_data/yang_m11_counts.csv", row.names = 1) %>% 
+  setNames(., c("h0_rep1","h0_rep2","h1_rep1","h1_rep2","h6_rep1","h6_rep2","h12_rep1","h12_rep2","h24_rep1","h24_rep2","h36_rep1","h36_rep2","h48_rep1","h48_rep2","h72_rep1","h72_rep2"))
+
+meta_data <- data.frame(
+  Samples = c("h0_rep1","h0_rep2","h1_rep1","h1_rep2","h6_rep1","h6_rep2","h12_rep1","h12_rep2","h24_rep1","h24_rep2","h36_rep1","h36_rep2","h48_rep1","h48_rep2","h72_rep1","h72_rep2"),
+  Timepoint = as.factor(c(0,0,1,1,6,6,12,12,24,24,36,36,48,48,72,72))
+)
+```
+
+```{r}
+#| label: DESeq Analysis
+
+dds <- DESeq2::DESeqDataSetFromMatrix(countData = count_data,
+                                      colData = meta_data,
+                                      design = ~Timepoint)
+
+# filter the genes
+dds_filtered <- dds[rowSums(DESeq2::counts(dds) >= 10) >= min(table(meta_data$Timepoint)),]
+
+dds_norm <- DESeq2::DESeq(dds_filtered)
+
+rm(dds, dds_filtered, count_data, meta_data)
+```
+
+```{r}
+#| label: getting DEGs for every Timepoint comparison
+
+# Define the contrasts
+contrasts <- list(
+  "Timepoint_1_vs_0" = c("Timepoint", "1", "0"),
+  "Timepoint_6_vs_1" = c("Timepoint", "6", "1"),
+  "Timepoint_12_vs_6" = c("Timepoint", "12", "6"),
+  "Timepoint_24_vs_12" = c("Timepoint", "24", "12"),
+  "Timepoint_36_vs_24" = c("Timepoint", "36", "24"),
+  "Timepoint_48_vs_36" = c("Timepoint", "48", "36"),
+  "Timepoint_72_vs_48" = c("Timepoint", "72", "48")
+)
+
+# Run the results function for each contrast
+results_list <- lapply(names(contrasts), function(contrast_name) {
+  DESeq2::results(dds_norm, 
+                  contrast = contrasts[[contrast_name]],
+                  alpha = 0.1)
+})
+
+# Name the results list with the new names
+names(results_list) <- names(contrasts)
+
+rm(contrasts)
+```
+
+
+```{r}
+#| label: extracting the DEGs for each time frame
+
+DEGs_list <- lapply(results_list, function(result){
+  
+  DEGs <- result %>% 
+    as.data.frame() %>% 
+    dplyr::filter(pvalue < 0.05) %>% 
+    dplyr::filter(log2FoldChange > 1 | log2FoldChange < -1) %>% 
+    rownames()
+  
+  return(DEGs)
+})
+```
+
+

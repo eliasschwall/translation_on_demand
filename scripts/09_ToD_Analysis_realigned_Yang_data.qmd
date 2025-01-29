@@ -1,27 +1,194 @@
 ---
-title: "ToD_Analysis_realigned_Yang_data"
+title: "ToD Analysis of the realigned Yang data (mm11)"
 author: "Elias"
 format: html
 editor: visual
 ---
 
-## Quarto
+We want to do our previous ToD analysis we did with the mm9 aligned Yang data with the new aligned mm11. In the last script we checked if the to data sets are comparable and from now on we are using the mm11 for further analysis.
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+First we want to calculate the TPM values of our count data.
 
 ```{r}
-1 + 1
-```
+#| label: importing data
 
-You can add options to executable code like this
+transcriptomic_yang_data <- read.csv("../data/processed/mm11_transcirpt_data.csv", row.names = 1)
+proteomic_yang_data <- read.csv("../data/processed/proteomic_data_cleaned.csv")
+```
 
 ```{r}
-#| echo: false
-2 * 2
+#| label: adding ensembl ids to the proteomic data
+mart <- biomaRt::useEnsembl(biomart = "genes", dataset = "mmusculus_gene_ensembl")
+
+ensembl_ids_for_proteomic_data <- biomaRt::getBM(attributes = c("mgi_symbol", 
+                                                                "ensembl_gene_id"),
+                                                 filters = "mgi_symbol",
+                                                 values = proteomic_yang_data$GeneID,
+                                                 mart = mart)
+
+colnames(ensembl_ids_for_proteomic_data) <- c("GeneID", "ensembl_gene_id")
+
+proteomic_yang_data_ensembl <- merge(proteomic_yang_data, ensembl_ids_for_proteomic_data, by="GeneID") %>% 
+  rowwise() %>%
+  mutate(row_mean = mean(c_across(3:10), na.rm = TRUE)) %>%
+  group_by(ensembl_gene_id) %>%
+  slice_max(order_by = row_mean, n = 1) %>%
+  ungroup() %>%
+  dplyr::select(-row_mean) %>% 
+  tibble::column_to_rownames("ensembl_gene_id") %>% 
+  dplyr::select(-c('UniprotID', "GeneID")) %>% 
+  setNames(.,c("h0", "h1", "h6", "h12", "h24", "h36", "h48", "h72"))
+
+rm(proteomic_yang_data)
+rm(ensembl_ids_for_proteomic_data)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+Now we have to normalize the transcirptomic data
+
+```{r}
+#| label: normalization of transcriptomic data
+
+# getting the exons lengths of the genes 
+exon_leghts <- read.csv("../data/reference/mouse_gene_exon_lengths.csv")
+
+
+# calculating RPK
+transcipt_data_RPK <- merge(transcriptomic_yang_data %>% tibble::rownames_to_column("ensembl_gene_id"), exon_leghts, by = "ensembl_gene_id") %>% 
+  mutate(Exonic_Length = Exonic_Length / 1000) %>% 
+  tibble::column_to_rownames('ensembl_gene_id') %>% 
+  mutate(
+    h0 = h0 / Exonic_Length,
+    h1 = h1 / Exonic_Length,
+    h6 = h6 / Exonic_Length,
+    h12 = h12 / Exonic_Length,
+    h24 = h24 / Exonic_Length,
+    h36 = h36 / Exonic_Length,
+    h48 = h48 / Exonic_Length,
+    h72 = h72 / Exonic_Length
+  ) %>% 
+  dplyr::select(-Exonic_Length)
+
+# calculating the scaling factors
+TPM_scaling_factors <- colSums(transcipt_data_RPK) / 1e6
+
+# calculating the TPM
+transcipt_data_TPM <- sweep(transcipt_data_RPK, 2, TPM_scaling_factors, "/")
+
+# taking the log2 of TMP values 
+transcipt_data_TPM_log2 <- log2(transcipt_data_TPM + 1)
+
+write.csv(transcipt_data_RPK, file = "../data/mm11/processed/transcipt_data_RPK.csv")
+write.csv(transcipt_data_TPM, file = "../data/mm11/processed/transcipt_data_TPM.csv")
+write.csv(transcipt_data_TPM_log2, file = "../data/mm11/processed/transcipt_data_TPM_log2.csv")
+```
+
+Next we calculate the fold changes for the transcipt_data_TPM_log2 and the proteomic_yang_data_ensembl
+
+```{r}
+#| label: calculating fold changes 
+source("../R/calculating_FC_between_time_points.R")
+transcipt_data_TPM_log2_FC <- calculating_FC_between_time_points(transcipt_data_TPM_log2)
+proteomic_data_FC <- calculating_FC_between_time_points(proteomic_yang_data_ensembl)
+
+write.csv(transcipt_data_TPM_log2_FC, file = "../data/mm11/processed/transcipt_data_TPM_log2_FC.csv")
+write.csv(proteomic_data_FC, file = "../data/mm11/processed/proteomic_data_FC.csv")
+```
+
+Lastly, we want to calculate the ratio between protein fold change and RNA fold change
+
+```{r}
+#| label: calculating protein-RNA-FC-ratio
+
+# merging the two dfs together 
+protein_RNA_FCs <- merge(transcipt_data_TPM_log2_FC %>% tibble::rownames_to_column("ensembl_gene_id"),
+                         proteomic_data_FC          %>% tibble::rownames_to_column("ensembl_gene_id"),
+                         by = "ensembl_gene_id") %>% 
+  rename_with(~ gsub("\\.x$", "_protein", .x)) %>%
+  rename_with(~ gsub("\\.y$", "_RNA", .x)) %>% 
+  tibble::column_to_rownames("ensembl_gene_id")
+
+# calculating the rations
+ratios_FC_protein_RNA <- protein_RNA_FCs[,1:7] - protein_RNA_FCs[,8:14] 
+colnames(ratios_FC_protein_RNA) <- paste0(colnames(ratios_FC_protein_RNA)[1:7], "_RNA_ratio") 
+
+write.csv(ratios_FC_protein_RNA, file = "../data/mm11/processed/ratios_FC_protein_RNA.csv")
+```
+
+The last thing to do, is to filter for the ToD candidates
+
+```{r}
+#| label: saving background genes 
+
+# for enchrichment analysis we safe the background genes 
+background_genes <- ratios_FC_protein_RNA %>% rownames() 
+
+# we add the gene symbols for easy annotation later 
+background_genes <- biomaRt::getBM(attributes = c("mgi_symbol", 
+                                                  "ensembl_gene_id"),
+                                   filters = "ensembl_gene_id",
+                                   values = background_genes,
+                                   mart = mart)
+
+write.csv(background_genes, file = "../data/mm11/processed/background_genes.csv")
+
+
+
+```
+
+```{r}
+#| label: filtering for ToD candidates 
+candidate_threshold <- 1
+
+ratios_FC_protein_RNA$GeneID <- rownames(ratios_FC_protein_RNA)
+
+
+FC_0m_to_1h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_h0_to_h1_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_1h_to_6h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_h1_to_h6_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_6h_to_12h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_h6_to_h12_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_12h_to_24h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_h12_to_h24_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_24h_to_36h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_h24_to_h36_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_36h_to_48h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_h36_to_h48_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+FC_48h_to_72h_protein_RNA_ratio_gene_list <- ratios_FC_protein_RNA$GeneID[ratios_FC_protein_RNA$FC_h48_to_h72_protein_RNA_ratio > candidate_threshold] %>% na.omit()
+
+translation_on_demand_candidates <- list(
+  TOD_candidates_0m_to_1h = FC_0m_to_1h_protein_RNA_ratio_gene_list,
+  TOD_candidates_1h_to_6h = FC_1h_to_6h_protein_RNA_ratio_gene_list,
+  TOD_candidates_6h_to_12h = FC_6h_to_12h_protein_RNA_ratio_gene_list,
+  TOD_candidates_12h_to_24h = FC_12h_to_24h_protein_RNA_ratio_gene_list,
+  TOD_candidates_24h_to_36h = FC_24h_to_36h_protein_RNA_ratio_gene_list,
+  TOD_candidates_36h_to_48h = FC_36h_to_48h_protein_RNA_ratio_gene_list,
+  TOD_candidates_48h_to_72h = FC_48h_to_72h_protein_RNA_ratio_gene_list
+)
+
+jsonlite::write_json(translation_on_demand_candidates, path = "../results/mm11_remapped/translation_on_demand_candidates.json")
+```
+
+Let's check if we have ToD candidates that are both in the mm9 and mm11 mapped data 
+```{r}
+#| label: comparing old and new ToD candidates 
+
+old_tod_candidates <- jsonlite::read_json("../results/mm9_old_data/translation_on_demand_candidates_1_threshold.json", simplifyVector = T)
+
+new_tod_candidates <- jsonlite::read_json("../results/mm11_remapped/translation_on_demand_candidates.json", simplifyVector = T)
+
+background_genes$mgi_symbol[background_genes$ensembl_gene_id %in% new_tod_candidates$TOD_candidates_0m_to_1h] %in% old_tod_candidates$TOD_candidates_0m_to_1h %>% table()
+
+background_genes$mgi_symbol[background_genes$ensembl_gene_id %in% new_tod_candidates$TOD_candidates_1h_to_6h] %in% old_tod_candidates$TOD_candidates_1h_to_6h %>% table()
+
+background_genes$mgi_symbol[background_genes$ensembl_gene_id %in% new_tod_candidates$TOD_candidates_6h_to_12h] %in% old_tod_candidates$TOD_candidates_6h_to_12h %>% table()
+
+background_genes$mgi_symbol[background_genes$ensembl_gene_id %in% new_tod_candidates$TOD_candidates_12h_to_24h] %in% old_tod_candidates$TOD_candidates_12h_to_24h %>% table()
+
+background_genes$mgi_symbol[background_genes$ensembl_gene_id %in% new_tod_candidates$TOD_candidates_24h_to_36h] %in% old_tod_candidates$TOD_candidates_24h_to_36h %>% table()
+
+background_genes$mgi_symbol[background_genes$ensembl_gene_id %in% new_tod_candidates$TOD_candidates_36h_to_48h] %in% old_tod_candidates$TOD_candidates_36h_to_48h %>% table()
+
+background_genes$mgi_symbol[background_genes$ensembl_gene_id %in% new_tod_candidates$TOD_candidates_48h_to_72h] %in% old_tod_candidates$TOD_candidates_48h_to_72h %>% table()
+```
+

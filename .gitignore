@@ -11,4 +11,7 @@ STAR-2.7.11b/
 tmp/
 STAR_alignment/
 counts/
-.csv
+*.csv
+*.pdf
+results/yang_remapping_qc/
+results/mm11_remapped/yang_remapping_qc

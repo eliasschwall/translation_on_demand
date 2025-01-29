@@ -2,51 +2,17 @@ QC SUMMARY
 ==========
 
 1. Data Dimensions
-Initial genes: 56884 
-Genes after filtering: 23429 
+Initial genes: 15722 
+Genes after filtering: 15722 
 Number of samples: 16 
 
 2. Library Sizes
-Mean library size: 35626027 reads
-Median library size: 35324206 reads
-Range: 28609257 to 46082811 reads
+Mean library size: 33760779 reads
+Median library size: 33525135 reads
+Range: 27071229 to 43855624 reads
 
 3. Per Sample Summary
 
-RNA-seq Analysis: Yang et al. Data Remapping
-Data Processing Steps
-
-Raw Data Preprocessing
-
-
-Remapped RNA-seq data (SRR7624365-SRR7624380)
-Used STAR aligner with mm11 reference genome
-Generated BAM files for 16 samples
-
-
-Read Counting
-
-
-Used featureCounts (Rsubread package)
-Generated gene-level counts using GENCODE vM33 annotation
-Initial count matrix: 56,884 genes × 16 samples
-
-
-Quality Control
-
-
-Filtered low-expression genes (≥10 reads in ≥2 samples)
-Retained 23,429 out of 56,884 genes
-Library sizes range: 28.6M - 46.1M reads
-
-Sample Information
-Time course experiment with duplicates:
-
-0h (2 replicates)
-1h (2 replicates)
-6h (2 replicates)
-12h (2 replicates)
-24h (2 replicates)
-36h (2 replicates)
-48h (2 replicates)
-72h (2 replicates)
+4. Replicate Correlations
+        0         1         6        12        24        36        48        72 
+0.9892144 0.9943354 0.9962950 0.9961382 0.9892810 0.9959579 0.9881203 0.9948669 
