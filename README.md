@@ -1,2 +1,1 @@
-# ToD
-Translation on Demand Project
+# Translation on Demand Project
