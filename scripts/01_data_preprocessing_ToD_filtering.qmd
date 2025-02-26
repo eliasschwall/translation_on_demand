@@ -1,0 +1,248 @@
+---
+title: "Preprocessing of the Yang Data and calling ToD candidate genes"
+author: Luke
+format: html
+---
+
+```{r Setup}
+library(tidyverse)
+# Loading RNA data
+transcriptomic_yang_data <- here::here("data/raw/yang_paper", "transcriptomic_counts.csv") |> read.csv()
+# Loading preprocessed proteomics
+proteomic_yang_data <- here::here("data/processed/yang_paper", "yang_proteomics.rds") |> readRDS()
+```
+
+===============================
+TRANSCRIPTOMIC DATA PROCESSING
+===============================
+
+```{r Data cleaning and filtering}
+transcriptomic_yang_data <- transcriptomic_yang_data %>%
+  tibble::as_tibble() %>%
+  # Remove genes with an empty mgi_symbol.
+  dplyr::filter(mgi_symbol != "") %>%
+  # Remove genes that have zero counts in all timepoints.
+  dplyr::filter(rowSums(dplyr::select(., dplyr::starts_with("X"))) > 0) %>%
+  # Keep only genes that have at least 10 counts in at least 2 timepoint columns.
+  dplyr::filter(rowSums(dplyr::select(., dplyr::starts_with("X")) >= 10) >= 2)
+
+# 2. Resolve duplicate gene IDs by keeping the row with the highest total counts
+# Identify count columns
+count_columns <- transcriptomic_yang_data %>%
+  dplyr::select(dplyr::starts_with("X")) %>%
+  names()
+
+# Compute total counts per row and keep the row with the highest total for each original_id
+transcriptomic_yang_data <- transcriptomic_yang_data %>%
+  dplyr::mutate(total_counts = rowSums(dplyr::across(all_of(count_columns)))) %>%
+  dplyr::group_by(original_id) %>%
+  dplyr::slice_max(total_counts, n = 1, with_ties = FALSE) %>%  # keep only the best row per gene
+  dplyr::ungroup() %>%
+  dplyr::select(-total_counts)
+
+# Step 1: Identify common genes between the RNA and proteomics datasets.
+common_genes <- intersect(transcriptomic_yang_data$mgi_symbol, proteomic_yang_data$GeneID)
+cat("Number of common genes:", length(common_genes), "\n")
+
+# Step 2: Filter the RNA data to include only genes with a non-empty mgi_symbol that are present in common_genes.
+rna_matched <- transcriptomic_yang_data %>%
+  dplyr::filter(mgi_symbol %in% common_genes)
+
+# Step 3: Filter the proteomics data to include only genes that are in common_genes.
+prot_matched <- proteomic_yang_data %>%
+  dplyr::filter(GeneID %in% common_genes)
+```
+
+```{r Prepare data for DESeq2}
+# Assume rna_matched is your RNA data frame with columns "original_id", "mgi_symbol", and count columns that start with "X".
+count_data <- rna_matched %>%
+  dplyr::select(dplyr::starts_with("X")) %>%
+  as.matrix()
+
+# Use original_id as row names.
+rownames(count_data) <- rna_matched$original_id
+
+# Create the Sample Metadata (colData) Table.
+sample_names <- colnames(count_data)
+colData <- tibble(sample = sample_names) %>%
+  dplyr::mutate(
+    # Extract timepoint (e.g., "X0h" becomes "0h")
+    timepoint = str_extract(sample, "X\\d+h") %>% str_remove("X"),
+    # Extract replicate info (e.g., "rep1")
+    replicate = str_extract(sample, "rep\\d+")
+  ) %>%
+  # Convert to factors with a specified level order for timepoint.
+  dplyr::mutate(
+    timepoint = factor(timepoint, levels = c("0h", "1h", "6h", "12h", "24h", "36h", "48h", "72h")),
+    replicate = factor(replicate)
+  ) %>%
+  tibble::column_to_rownames("sample")
+
+# ------------------------------
+# Check for Outliers in the Raw Counts Data (Optional)
+# ------------------------------
+
+# Compute total counts per gene.
+gene_totals <- rowSums(count_data)
+
+# Create a data frame for visualization.
+gene_totals_df <- tibble(
+  gene = names(gene_totals),
+  total_counts = gene_totals
+)
+
+cat("Summary of total counts per gene:\n")
+print(summary(gene_totals))
+
+# Plot a density plot of total counts on a log10 scale.
+p_density <- ggplot(gene_totals_df, aes(x = total_counts)) +
+  geom_density(fill = "blue", alpha = 0.5) +
+  scale_x_log10() +
+  labs(title = "Density of Total Counts per Gene (log10 scale)",
+       x = "Total Counts (log10 scale)", y = "Density") +
+  theme_minimal()
+print(p_density)
+
+# Apply a filter to remove lowly expressed genes.
+# Keep genes that have at least 10 counts in at least 2 samples.
+filtered_count_data <- count_data[rowSums(count_data >= 10) >= 2, ]
+
+cat("Number of genes before filtering:", nrow(count_data), "\n")
+cat("Number of genes after filtering low counts:", nrow(filtered_count_data), "\n")
+
+# ------------------------------
+# Create the DESeq2 Dataset and Run DESeq2
+# ------------------------------
+library(DESeq2)
+dds <- DESeqDataSetFromMatrix(
+  countData = filtered_count_data,
+  colData   = colData,
+  design    = ~ timepoint
+)
+
+# Run the DESeq2 pipeline.
+dds <- DESeq(dds)
+
+# *** Add gene annotation (mgi_symbol) to the DESeq2 object ***
+rowData(dds)$mgi_symbol <- rna_matched$mgi_symbol[match(rownames(dds), rna_matched$original_id)]
+
+# ------------------------------
+# Define Contrasts and Extract Stable Genes
+# ------------------------------
+contrasts <- list(
+  "1h_vs_0h"    = c("timepoint", "1h", "0h"),
+  "6h_vs_1h"    = c("timepoint", "6h", "1h"),
+  "12h_vs_6h"   = c("timepoint", "12h", "6h"),
+  "24h_vs_12h"  = c("timepoint", "24h", "12h"),
+  "36h_vs_24h"  = c("timepoint", "36h", "24h"),
+  "48h_vs_36h"  = c("timepoint", "48h", "36h"),
+  "72h_vs_48h"  = c("timepoint", "72h", "48h")
+)
+
+# Initialize an empty list to store stable genes for each contrast.
+stable_genes_list <- list()
+
+for (comp_name in names(contrasts)) {
+  contrast <- contrasts[[comp_name]]
+  
+  # Run DESeq2 results with a modified null hypothesis:
+  # Testing if the true log₂FC is within ±1 (null hypothesis) versus outside that range.
+  res_stable <- results(dds, contrast = contrast,
+                        lfcThreshold = 1,
+                        altHypothesis = "greaterAbs")
+  
+  # Convert the results to a data frame.
+  res_df <- as.data.frame(res_stable)
+  
+  # Add the mgi_symbol column from the DESeq2 rowData.
+  res_df$mgi_symbol <- rowData(dds)$mgi_symbol[match(rownames(res_df), rownames(dds))]
+  
+  # Filter for genes whose 95% confidence interval lies entirely within [-1, +1]
+  stable <- res_df %>%
+    dplyr::filter((log2FoldChange - 1.96 * lfcSE) >= -1,
+                  (log2FoldChange + 1.96 * lfcSE) <= 1)
+  
+  # Store the stable genes for this contrast.
+  stable_genes_list[[comp_name]] <- stable
+  
+  cat("Comparison:", comp_name, "\n")
+  cat("Number of stable genes (95% CI within ±1):", nrow(stable), "\n\n")
+}
+```
+
+
+
+-> now filter proteomics for stable rna genes 
+
+```{r Match stable genes with proteomics and calculate ratios}
+library(tidyverse)
+
+# ----- Step 0: Define a mapping from contrast names to the corresponding proteomics log2FC column names (non-scaled) -----
+contrast_mapping <- c(
+  "1h_vs_0h"   = "log2FC_0m_1h",
+  "6h_vs_1h"   = "log2FC_1h_6h",
+  "12h_vs_6h"  = "log2FC_6h_12h",
+  "24h_vs_12h" = "log2FC_12h_24h",
+  "36h_vs_24h" = "log2FC_24h_36h",
+  "48h_vs_36h" = "log2FC_36h_48h",
+  "72h_vs_48h" = "log2FC_48h_72h"
+)
+
+# ----- Now, process each contrast individually -----
+# We'll store the matched data and the filtered (ToD candidate) data in lists.
+matched_list <- list()
+ToD_candidates_list <- list()
+
+for (comp in names(contrast_mapping)) {
+  # Use the non-scaled proteomics column.
+  prot_col_name <- as.character(contrast_mapping[comp])
+  
+  # Extract RNA stable genes for the current contrast.
+  # (Assuming stable_genes_list[[comp]] exists and has the columns mgi_symbol and log2FoldChange)
+  rna_stable <- stable_genes_list[[comp]] %>%
+    dplyr::select(mgi_symbol, log2FoldChange)
+  
+  # Extract the corresponding proteomics data from the non-scaled proteomics data frame.
+  prot_data <- prot_matched %>%
+    dplyr::select(GeneID, dplyr::all_of(prot_col_name))
+  
+  # Match RNA and proteomics data by joining on gene symbol.
+  matched <- inner_join(rna_stable, prot_data, by = c("mgi_symbol" = "GeneID"))
+  
+  # Compute the difference: proteomics log₂FC minus RNA log₂FC.
+  matched <- matched %>%
+    dplyr::mutate(diff = .data[[prot_col_name]] - log2FoldChange)
+  
+  # Store the matched data.
+  matched_list[[comp]] <- matched
+  
+  # Filter for ToD candidates: for example, keep genes with a difference ≥ 1.
+  candidates <- matched %>%
+    dplyr::filter(diff >= 1) %>%
+    dplyr::arrange(desc(diff))
+  
+  # Store the candidate list.
+  ToD_candidates_list[[comp]] <- candidates
+  
+  # Print summary information.
+  cat("-------------------------------------------------\n")
+  cat("Contrast:", comp, "\n")
+  cat("Summary of diff (", prot_col_name, " - log2FoldChange):\n", sep = "")
+  print(summary(matched$diff))
+  cat("Number of ToD candidates (diff >= 1):", nrow(candidates), "\n")
+  cat("Top 10 candidates:\n")
+  print(head(candidates, 10))
+  cat("-------------------------------------------------\n\n")
+}
+
+# ----- Optionally, inspect the candidate list for specific contrasts -----
+print(ToD_candidates_list[["1h_vs_0h"]])
+print(ToD_candidates_list[["6h_vs_1h"]])
+print(ToD_candidates_list[["12h_vs_6h"]])
+print(ToD_candidates_list[["24h_vs_12h"]])
+print(ToD_candidates_list[["36h_vs_24h"]])
+print(ToD_candidates_list[["48h_vs_36h"]])
+print(ToD_candidates_list[["72h_vs_48h"]])
+
+saveRDS(ToD_candidates_list, file = here::here("data/processed", "ToD_candidates_list.rds"))
+```

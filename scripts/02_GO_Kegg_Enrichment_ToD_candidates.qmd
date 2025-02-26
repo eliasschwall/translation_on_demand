@@ -1,0 +1,196 @@
+
+
+```{r Setup}
+transcriptomic_yang_data <- here::here("data/raw/yang_paper", "transcriptomic_counts.csv") |> read.csv()
+proteomic_yang_data <- here::here("data/processed/yang_paper", "yang_proteomics.rds") |> readRDS()
+ToD_candidates_list <- here::here("data/processed", "ToD_candidates_list.rds") |> readRDS()
+```
+
+```{r GO ANALYSIS}
+  # ------------------------------
+  # Load Necessary Libraries
+  # ------------------------------
+  library(tidyverse)
+  library(clusterProfiler)
+  library(org.Mm.eg.db)
+  library(enrichplot)
+
+  # ------------------------------
+  # Step 0: Define the Background Gene List
+  # ------------------------------
+  # Assume:
+  #   - transcriptomic_yang_data has a column 'mgi_symbol' (RNA gene symbols)
+  #   - proteomic_data has a column 'GeneID' (proteomics gene identifiers)
+  rna_genes  <- unique(transcriptomic_yang_data$mgi_symbol)
+  prot_genes <- unique(proteomic_yang_data$GeneID)
+  background_genes <- intersect(rna_genes, prot_genes)
+
+  # Convert background gene symbols to Entrez IDs.
+  bg_entrez <- bitr(background_genes, fromType = "SYMBOL", 
+                    toType = "ENTREZID", OrgDb = org.Mm.eg.db)
+  cat("Number of background (common) genes (converted):", nrow(bg_entrez), "\n\n")
+
+  # ------------------------------
+  # Step 1: Run GO Enrichment Analysis for Each Comparison
+  # ------------------------------
+  # We assume that ToD_candidates_list is a named list with elements:
+  #   "1h_vs_0h", "6h_vs_1h", "12h_vs_6h", "24h_vs_12h", "36h_vs_24h", "48h_vs_36h", "72h_vs_48h"
+  # Each element is a data frame containing at least a column named "mgi_symbol".
+  comparison_names <- c("1h_vs_0h", "6h_vs_1h", "12h_vs_6h", "24h_vs_12h", "36h_vs_24h", "48h_vs_36h", "72h_vs_48h")
+  ontologies <- c("BP", "CC", "MF")
+
+  # ----- Step 0: Define a mapping from contrast names to the corresponding proteomics raw log₂FC column names -----
+  contrast_mapping <- c(
+    "1h_vs_0h"   = "log2FC_0m_1h",
+    "6h_vs_1h"   = "log2FC_1h_6h",
+    "12h_vs_6h"  = "log2FC_6h_12h",
+    "24h_vs_12h" = "log2FC_12h_24h",
+    "36h_vs_24h" = "log2FC_24h_36h",
+    "48h_vs_36h" = "log2FC_36h_48h",
+    "72h_vs_48h" = "log2FC_48h_72h"
+  )
+
+plots <- list()
+  for (comp in comparison_names) {
+    
+    if (!comp %in% names(ToD_candidates_list)) {
+      cat("Comparison", comp, "not found in ToD_candidates_list.\n")
+      next
+    }
+    
+    # Extract candidate gene symbols for the current comparison.
+    candidate_genes <- unique(ToD_candidates_list[[comp]]$mgi_symbol)
+    
+    if (length(candidate_genes) == 0) {
+      cat("No candidate genes found for", comp, "\n")
+      next
+    }
+    
+    # Convert candidate gene symbols to Entrez IDs.
+    cand_entrez <- bitr(candidate_genes, fromType = "SYMBOL", 
+                        toType = "ENTREZID", OrgDb = org.Mm.eg.db)
+    
+    cat("-------------------------------------------------\n")
+    cat("Comparison:", comp, "\n")
+    cat("Number of candidate genes:", length(candidate_genes), "\n")
+    cat("Candidate genes (converted):", nrow(cand_entrez), "\n\n")
+    
+    # For each ontology, run GO enrichment and create a dot plot.
+    for (ont in ontologies) {
+      ego <- enrichGO(gene         = cand_entrez$ENTREZID,
+                      universe     = bg_entrez$ENTREZID,
+                      OrgDb        = org.Mm.eg.db,
+                      ont          = ont,
+                      pAdjustMethod = "BH",
+                      pvalueCutoff = 1,    # lenient thresholds for exploration
+                      qvalueCutoff = 1,
+                      readable     = TRUE)
+      
+      # Create the dot plot.
+      if(nrow(as.data.frame(ego)) > 0) {
+        p <- dotplot(ego, showCategory = 10) +
+            ggtitle(paste("GO Enrichment -", ont, "(", comp, ")"))
+      } else {
+        p <- ggplot() +
+            geom_blank() +
+            ggtitle(paste("No enriched GO terms for", ont, "(", comp, ")"))
+      }
+      
+      # Store the plot in the plots list with a descriptive name.
+      plots[[paste0(comp, "_", ont)]] <- p
+    }
+    
+    cat("GO enrichment analysis completed for comparison:", comp, "\n\n")
+  }
+
+for(plot_name in names(plots)){
+  plots[[plot_name]]
+}
+```
+
+
+
+```{r KEGG ANALYSIS}
+# ------------------------------
+# Load Necessary Libraries
+# ------------------------------
+library(tidyverse)
+library(clusterProfiler)
+library(org.Mm.eg.db)
+library(enrichplot)
+
+# ------------------------------
+# Step 0: Define the Background Gene List
+# ------------------------------
+# Extract unique gene symbols from RNA and proteomics data.
+rna_genes  <- unique(transcriptomic_yang_data$mgi_symbol)
+prot_genes <- unique(proteomic_yang_data$GeneID)
+background_genes <- intersect(rna_genes, prot_genes)
+
+# Convert background gene symbols to Entrez IDs.
+bg_entrez <- bitr(background_genes, fromType = "SYMBOL", 
+                  toType = "ENTREZID", OrgDb = org.Mm.eg.db)
+cat("Number of background (common) genes (converted):", nrow(bg_entrez), "\n\n")
+
+# ------------------------------
+# Step 1: Run KEGG Pathway Enrichment Analysis for Each Comparison
+# ------------------------------
+# We assume that ToD_candidates_list is a named list with elements:
+#   "1h_vs_0h", "6h_vs_1h", "12h_vs_6h", "24h_vs_12h", "36h_vs_24h", "48h_vs_36h", "72h_vs_48h"
+# Each element is a data frame containing at least a column named "mgi_symbol".
+comparison_names <- c("1h_vs_0h", "6h_vs_1h", "12h_vs_6h", "24h_vs_12h", "36h_vs_24h", "48h_vs_36h", "72h_vs_48h")
+
+for (comp in comparison_names) {
+  
+  # Extract candidate gene symbols for the current comparison.
+  candidate_genes <- unique(ToD_candidates_list[[comp]]$mgi_symbol)
+  
+  # Convert candidate gene symbols to Entrez IDs.
+  cand_entrez <- bitr(candidate_genes, fromType = "SYMBOL", 
+                      toType = "ENTREZID", OrgDb = org.Mm.eg.db)
+  
+  cat("-------------------------------------------------\n")
+  cat("Comparison:", comp, "\n")
+  cat("Number of candidate genes:", length(candidate_genes), "\n")
+  cat("Candidate genes (converted):", nrow(cand_entrez), "\n\n")
+  
+  # Run KEGG enrichment analysis using enrichKEGG.
+  kegg_res <- enrichKEGG(gene         = cand_entrez$ENTREZID,
+                         universe     = bg_entrez$ENTREZID,
+                         organism     = "mmu",      # mouse KEGG organism code
+                         pvalueCutoff = 0.5,          # lenient threshold for exploration
+                         qvalueCutoff = 0.5)
+  
+  # Remove the unwanted text from the pathway descriptions (if present).
+  if (!is.null(kegg_res) && nrow(kegg_res@result) > 0) {
+    kegg_res@result$Description <- gsub(" - Mus musculus.*", "", kegg_res@result$Description)
+  }
+  
+  # Create the dot plot.
+  if(nrow(as.data.frame(kegg_res)) > 0) {
+    p_kegg <- dotplot(kegg_res, showCategory = 20) +
+              ggtitle(paste("KEGG Pathway Enrichment (", comp, ")", sep = ""))
+  } else {
+    p_kegg <- ggplot() +
+              geom_blank() +
+              ggtitle(paste("No enriched KEGG pathways for", comp))
+  }
+  
+  plots[[paste0("p_", comp, "_KEGG")]] <- p_kegg
+  
+  cat("KEGG enrichment analysis completed for comparison:", comp, "\n\n")
+}
+```
+
+
+```{r saving plots}
+# Open a PDF device
+pdf(here::here("results/GO_Kegg_Enrichment_ToD_candidates", "GO_Kegg_Enrichment_ToD_candidates.pdf"))
+
+for(plot_name in names(plots)) {
+  print(plots[[plot_name]])
+}
+
+# Close the PDF device
+dev.off()
+```
