@@ -1,358 +1,39 @@
+```{r}
+#| label: Loading function and data
+list.files("R", full.names = T) |> lapply(source)
+ToD_candidates_list <- readRDS("data/processed/ToD_candidates_list.rds")
+```
+
 ```{r UTRs}
 mart <- biomaRt::useEnsembl(biomart = "genes", dataset = "mmusculus_gene_ensembl")
 
-get_utrs_modified <- function(gene_df, mart.object = mart) {
-  # fetching the biomaRt attributes we need separately for both UTRs
-  utr_5 <- biomaRt::getBM(attributes = c("5utr", "mgi_symbol", "ensembl_gene_id"),
-                          filters = "mgi_symbol",
-                          values = gene_df$mgi_symbol,
-                          mart = mart.object)
-  
-  utr_3 <- biomaRt::getBM(attributes = c("3utr", "mgi_symbol", "ensembl_gene_id"),
-                          filters = "mgi_symbol",
-                          values = gene_df$mgi_symbol,
-                          mart = mart.object)
-  
-  # Change column names
-  colnames(utr_5)[1] <- "five_prime_utr"
-  colnames(utr_3)[1] <- "three_prime_utr"
+ToDC_all_utrs <- lapply(names(ToD_candidates_list), function(time_point) {
+  get_utrs(ToD_candidates_list[[time_point]], mart.object = mart)
+})
 
-  # Process 5' UTRs
-  utr_5 <- utr_5 %>% 
-    tibble() %>% 
-    dplyr::filter(!stringr::str_detect(five_prime_utr, "Sequence unavailable")) %>%
-    mutate(
-      utr_5_length = nchar(five_prime_utr),
-      A_count_absolute = str_count(five_prime_utr, "A"),
-      A_count_percentage = str_count(five_prime_utr, "A") / utr_5_length * 100,
-      T_count_absolute = str_count(five_prime_utr, "T"),
-      T_count_percentage = str_count(five_prime_utr, "T") / utr_5_length * 100,
-      G_count_absolute = str_count(five_prime_utr, "G"),
-      G_count_percentage = str_count(five_prime_utr, "G") / utr_5_length * 100,
-      C_count_absolute = str_count(five_prime_utr, "C"),
-      C_count_percentage = str_count(five_prime_utr, "C") / utr_5_length * 100,
-      A_to_T_ratio = str_count(five_prime_utr, "A") / str_count(five_prime_utr, "T"),
-      G_to_C_ratio = str_count(five_prime_utr, "G") / str_count(five_prime_utr, "C"),
-      GC_content_percentage = ((str_count(five_prime_utr, "G") + str_count(five_prime_utr, "C")) / 
-                               (str_count(five_prime_utr, "A") + str_count(five_prime_utr, "T") + 
-                                  str_count(five_prime_utr, "G") + str_count(five_prime_utr, "C"))*100)
-    )
-    
-  # Process 3' UTRs  
-  utr_3 <- utr_3 %>% 
-    tibble() %>% 
-    dplyr::filter(!stringr::str_detect(three_prime_utr, "Sequence unavailable")) %>%
-    mutate(
-      utr_3_length = nchar(three_prime_utr),
-      A_count_absolute = str_count(three_prime_utr, "A"),
-      A_count_percentage = str_count(three_prime_utr, "A") / utr_3_length * 100,
-      T_count_absolute = str_count(three_prime_utr, "T"),
-      T_count_percentage = str_count(three_prime_utr, "T") / utr_3_length * 100,
-      G_count_absolute = str_count(three_prime_utr, "G"),
-      G_count_percentage = str_count(three_prime_utr, "G") / utr_3_length * 100,
-      C_count_absolute = str_count(three_prime_utr, "C"),
-      C_count_percentage = str_count(three_prime_utr, "C") / utr_3_length * 100,
-      A_to_T_ratio = str_count(three_prime_utr, "A") / str_count(three_prime_utr, "T"),
-      G_to_C_ratio = str_count(three_prime_utr, "G") / str_count(three_prime_utr, "C"),
-      GC_content_percentage = ((str_count(three_prime_utr, "G") + str_count(three_prime_utr, "C")) / 
-                               (str_count(three_prime_utr, "A") + str_count(three_prime_utr, "T") + 
-                                  str_count(three_prime_utr, "G") + str_count(three_prime_utr, "C"))*100)
-    )           
-  
-  return(list(utr_5 = utr_5,
-              utr_3 = utr_3))
-}
-
-# Create a list to store all UTR results
-all_utrs <- list()
-
-# Get UTRs for each time comparison
-time_points <- c("1h_vs_0h", "6h_vs_1h", "12h_vs_6h", "24h_vs_12h", 
-                "36h_vs_24h", "48h_vs_36h", "72h_vs_48h")
-
-for(time_point in time_points) {
-  all_utrs[[time_point]] <- get_utrs_modified(ToD_candidates_list[[time_point]], mart.object = mart)
-}
-
-
-# Then run the function for a single time point, for example "1h_vs_0h":
-utrs_1h_vs_0h <- get_utrs_modified(ToD_candidates_list[["1h_vs_0h"]], mart.object = mart)
-
-# To access the results:
-utrs_1h_vs_0h$utr_5  # for 5' UTRs
-utrs_1h_vs_0h$utr_3  # for 3' UTRs
+# Set the names of the list to the time points
+names(ToDC_all_utrs) <- names(ToD_candidates_list)
 ```
 
 
 ```{r Analysing UTRs}
-# Function to count non-overlapping pattern occurrences
-count_non_overlapping_patterns <- function(sequence, pattern) {
-  matches <- gregexpr(pattern, sequence, fixed = TRUE)[[1]]
-  if (matches[1] == -1) return(0)  # No matches found
-  
-  # Get positions and lengths of matches
-  match_positions <- matches
-  match_lengths <- attr(matches, "match.length")
-  
-  # Remove overlapping matches
-  non_overlapping <- numeric(0)
-  last_end <- 0
-  
-  for(i in seq_along(match_positions)) {
-    start_pos <- match_positions[i]
-    end_pos <- start_pos + match_lengths[i] - 1
-    
-    if(start_pos > last_end) {
-      non_overlapping <- c(non_overlapping, start_pos)
-      last_end <- end_pos
-    }
-  }
-  
-  return(length(non_overlapping))
-}
-
-# Function to analyze UTR data
-analyze_utr_data <- function(utr_data, input_genes, time_point, utr_type) {
-  
-  # Get the UTR column name
-  utr_col <- if(utr_type == "five_prime") "five_prime_utr" else "three_prime_utr"
-  
-  # Define regulatory elements
-  regulatory_elements <- list(
-    ARE = c("ATTTA", "ATTTTA", "TTATTTATT", "TATTTAT"),
-    polyA = c("AATAAA", "ATTAAA", "AGTAAA", "TATAAA"),
-    TOP = c("CTTTCC", "CTTTTC", "CTTTCT"),
-    IRES = c("GGATCC", "CCGCGG", "GCGCGC")
-  )
-  
-  # Add regulatory element counts
-  utr_results <- utr_data %>%
-    mutate(
-      ARE_count = sapply(get(utr_col), function(seq) {
-        sum(sapply(regulatory_elements$ARE, function(x) count_non_overlapping_patterns(seq, x)))
-      }),
-      polyA_count = sapply(get(utr_col), function(seq) {
-        sum(sapply(regulatory_elements$polyA, function(x) count_non_overlapping_patterns(seq, x)))
-      }),
-      TOP_count = sapply(get(utr_col), function(seq) {
-        sum(sapply(regulatory_elements$TOP, function(x) count_non_overlapping_patterns(seq, x)))
-      }),
-      IRES_count = sapply(get(utr_col), function(seq) {
-        sum(sapply(regulatory_elements$IRES, function(x) count_non_overlapping_patterns(seq, x)))
-      }),
-      # Add columns showing which specific patterns were found
-      ARE_patterns = sapply(get(utr_col), function(seq) {
-        found <- sapply(regulatory_elements$ARE, function(x) count_non_overlapping_patterns(seq, x) > 0)
-        paste(regulatory_elements$ARE[found], collapse = ";")
-      }),
-      polyA_patterns = sapply(get(utr_col), function(seq) {
-        found <- sapply(regulatory_elements$polyA, function(x) count_non_overlapping_patterns(seq, x) > 0)
-        paste(regulatory_elements$polyA[found], collapse = ";")
-      }),
-      TOP_patterns = sapply(get(utr_col), function(seq) {
-        found <- sapply(regulatory_elements$TOP, function(x) count_non_overlapping_patterns(seq, x) > 0)
-        paste(regulatory_elements$TOP[found], collapse = ";")
-      }),
-      IRES_patterns = sapply(get(utr_col), function(seq) {
-        found <- sapply(regulatory_elements$IRES, function(x) count_non_overlapping_patterns(seq, x) > 0)
-        paste(regulatory_elements$IRES[found], collapse = ";")
-      })
-    )
-  
-  # Basic summary
-  cat(sprintf("\n=== Analysis for %s %s UTRs ===\n", time_point, utr_type))
-  cat(sprintf("\nInput genes: %d", length(input_genes)))
-  cat(sprintf("\nGenes with UTRs: %d (%0.1f%%)", 
-              length(unique(utr_results$mgi_symbol)),
-              length(unique(utr_results$mgi_symbol))/length(input_genes)*100))
-  cat(sprintf("\nTotal UTR sequences (isoforms): %d", nrow(utr_results)))
-  cat(sprintf("\nMean isoforms per gene: %0.1f", 
-              nrow(utr_results)/length(unique(utr_results$mgi_symbol))))
-  
-  # Regulatory element analysis
-  cat("\n\nRegulatory Elements Summary:")
-  elements <- c("ARE", "polyA", "TOP", "IRES")
-  for(element in elements) {
-    genes_with_element <- utr_results %>%
-      filter(get(paste0(element, "_count")) > 0) %>%
-      pull(mgi_symbol) %>%
-      unique()
-    
-    cat(sprintf("\n\nGenes with %s: %d (%0.1f%% of genes with UTRs)", 
-                element, 
-                length(genes_with_element),
-                length(genes_with_element)/length(unique(utr_results$mgi_symbol))*100))
-    
-    cat("\nTop 5 genes by count:")
-    top_genes <- utr_results %>%
-      group_by(mgi_symbol) %>%
-      summarise(
-        total_count = sum(get(paste0(element, "_count"))),
-        isoform_count = n(),
-        isoforms_with_element = sum(get(paste0(element, "_count")) > 0),
-        patterns = paste(unique(unlist(strsplit(get(paste0(element, "_patterns")), ";"))), collapse = ";")
-      ) %>%
-      filter(total_count > 0) %>%
-      arrange(desc(total_count)) %>%
-      head(5)
-    print(top_genes)
-  }
-  
-  return(utr_results)
-}
-
-# Analyze 1h vs 0h data
 input_genes <- ToD_candidates_list[["1h_vs_0h"]]$mgi_symbol
 
 # Analyze 5' UTRs
-five_prime_analysis <- analyze_utr_data(utrs_1h_vs_0h$utr_5, 
+five_prime_analysis <- analyze_utr_data(ToDC_all_utrs$`1h_vs_0h`$utr_5, 
                                       input_genes, 
                                       "1h_vs_0h", 
                                       "five_prime")
 
 # Analyze 3' UTRs
-three_prime_analysis <- analyze_utr_data(utrs_1h_vs_0h$utr_3, 
+three_prime_analysis <- analyze_utr_data(ToDC_all_utrs$`1h_vs_0h`$utr_3, 
                                        input_genes, 
                                        "1h_vs_0h", 
                                        "three_prime")
-
-
-
-
-
-
-
-
-
-library(universalmotif)
-library(Biostrings)
-
-# Check sequence lengths
-seq_lengths <- width(three_prime_seqs)
-summary(seq_lengths)
-
-# Look at our motif
-print(PAS)
-motif_width <- ncol(PAS)
-print(paste("Motif width:", motif_width))
-
-# Find any sequences shorter than motif width
-short_seqs <- which(seq_lengths < motif_width)
-if(length(short_seqs) > 0) {
-  print("Sequences shorter than motif:")
-  print(three_prime_seqs[short_seqs])
-  
-  # Remove sequences that are too short
-  three_prime_seqs_filtered <- three_prime_seqs[seq_lengths >= motif_width]
-  print(paste("Remaining sequences after filtering:", length(three_prime_seqs_filtered)))
-  
-  # Now try scanning with filtered sequences
-  polyA_sites <- universalmotif::scan_sequences(sequences = three_prime_seqs_filtered, 
-                                              motifs = PAS)
-}
-
-# Look at what we got
-str(polyA_sites)
-library(dplyr)
-
-# Convert results to data frame and remove duplicates
-polyA_results <- as.data.frame(polyA_sites) %>%
-  distinct(sequence, start, stop, match, .keep_all = TRUE)  # Remove exact duplicates
-
-remove_overlaps <- function(df) {
-  # Input should be a dataframe with start and stop positions
-  if(nrow(df) <= 1) return(df)
-  
-  # Order by position
-  df <- df[order(df$start), ]
-  
-  keep <- c(TRUE)
-  last_end <- df$stop[1]
-  
-  # Check if next start position begins before previous stop position
-  for(i in 2:nrow(df)) {
-    if(df$start[i] >= last_end) {
-      keep <- c(keep, TRUE)
-      last_end <- df$stop[i]
-    } else {
-      keep <- c(keep, FALSE)
-    }
-  }
-  
-  return(df[keep, ])
-}
-
-# Process results
-summary_stats <- polyA_results %>%
-  group_by(sequence) %>%
-  group_modify(~{
-    non_overlapping <- remove_overlaps(.x)
-    data.frame(
-      n_sites = nrow(non_overlapping),
-      positions = paste(non_overlapping$start, collapse = ","),
-      all_matches = paste(non_overlapping$match, collapse = ",")
-    )
-  }) %>%
-  arrange(desc(n_sites))
-
-
-# Print results
-print("Top genes by number of non-overlapping polyA signals:")
-head(summary_stats, 10)
-
-# Count how many genes have at least one polyA signal
-n_genes_with_signal <- nrow(summary_stats)
-total_genes <- length(three_prime_seqs_filtered)
-print(paste("Genes with at least one polyA signal:", 
-            n_genes_with_signal, 
-            sprintf("(%.1f%%)", n_genes_with_signal/total_genes*100)))
-
-# Look at unique variants found
-variant_counts <- table(unique(polyA_results$match))
-print("\nPolyA signal variants found:")
-print(variant_counts)
 ```
 
-```{r Using meme suite}
-library(Biostrings)
 
-# ---- Create FASTA files from your UTR data ----
 
-# For the 5' UTR sequences:
-# (Assuming the column with the sequence is named "five_prime_utr" and gene names are in "mgi_symbol")
-five_prime_utr_seqs <- DNAStringSet(utrs_1h_vs_0h$utr_5$five_prime_utr)
-names(five_prime_utr_seqs) <- utrs_1h_vs_0h$utr_5$mgi_symbol
-writeXStringSet(five_prime_utr_seqs, filepath = "five_prime_utr.fasta")
-cat("5' UTR FASTA file written to five_prime_utr.fasta\n")
-
-# For the 3' UTR sequences:
-# (Assuming the column with the sequence is named "three_prime_utr")
-three_prime_utr_seqs <- DNAStringSet(utrs_1h_vs_0h$utr_3$three_prime_utr)
-names(three_prime_utr_seqs) <- utrs_1h_vs_0h$utr_3$mgi_symbol
-writeXStringSet(three_prime_utr_seqs, filepath = "three_prime_utr.fasta")
-cat("3' UTR FASTA file written to three_prime_utr.fasta\n")
-
-# ---- Run MEME for motif discovery ----
-
-# Define parameters for MEME:
-# -dna       : treat sequences as DNA
-# -oc        : output directory (you can change these names as needed)
-# -mod zoops : use the Zero Or One Occurrence Per Sequence model (change if needed)
-# -nmotifs 5 : find up to 5 motifs (adjust according to your needs)
-# -minw 6    : minimum motif width
-# -maxw 50   : maximum motif width
-
-# Run MEME on 5' UTRs
-meme_command_5 <- "meme five_prime_utr.fasta -dna -oc meme_5_output -mod zoops -nmotifs 5 -minw 6 -maxw 50"
-cat("Running MEME on 5' UTRs...\n")
-system(meme_command_5)
-
-# Run MEME on 3' UTRs (optional; uncomment if desired)
-meme_command_3 <- "meme three_prime_utr.fasta -dna -oc meme_3_output -mod zoops -nmotifs 5 -minw 6 -maxw 50"
-cat("Running MEME on 3' UTRs...\n")
-system(meme_command_3)
-
-```
 
 
 
