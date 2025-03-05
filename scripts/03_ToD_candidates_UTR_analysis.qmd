@@ -33,7 +33,10 @@ three_prime_analysis <- analyze_utr_data(ToDC_all_utrs$`1h_vs_0h`$utr_3,
 ```
 
 
-
+```{r}
+#| label: Meme Analsis 
+memes::check_meme_install(meme_path = "../../../../data/user/eschwall/meme/bin/")
+```
 
 
 
