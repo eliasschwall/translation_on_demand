@@ -7,48 +7,49 @@ ToD_candidates_list <- here::here("data/processed", "ToD_candidates_list.rds") |
 ```
 
 ```{r GO ANALYSIS}
-  # ------------------------------
-  # Load Necessary Libraries
-  # ------------------------------
-  library(tidyverse)
-  library(clusterProfiler)
-  library(org.Mm.eg.db)
-  library(enrichplot)
+# ------------------------------
+# Load Necessary Libraries
+# ------------------------------
+library(tidyverse)
+library(clusterProfiler)
+library(org.Mm.eg.db)
+library(enrichplot)
 
-  # ------------------------------
-  # Step 0: Define the Background Gene List
-  # ------------------------------
-  # Assume:
-  #   - transcriptomic_yang_data has a column 'mgi_symbol' (RNA gene symbols)
-  #   - proteomic_data has a column 'GeneID' (proteomics gene identifiers)
-  rna_genes  <- unique(transcriptomic_yang_data$mgi_symbol)
-  prot_genes <- unique(proteomic_yang_data$GeneID)
-  background_genes <- intersect(rna_genes, prot_genes)
+# ------------------------------
+# Step 0: Define the Background Gene List
+# ------------------------------
+# Assume:
+#   - transcriptomic_yang_data has a column 'mgi_symbol' (RNA gene symbols)
+#   - proteomic_data has a column 'GeneID' (proteomics gene identifiers)
+rna_genes  <- unique(transcriptomic_yang_data$mgi_symbol)
+prot_genes <- unique(proteomic_yang_data$GeneID)
+background_genes <- intersect(rna_genes, prot_genes)
+saveRDS(background_genes, here::here("data/processed", "background_genes.rds"))
 
-  # Convert background gene symbols to Entrez IDs.
-  bg_entrez <- bitr(background_genes, fromType = "SYMBOL", 
-                    toType = "ENTREZID", OrgDb = org.Mm.eg.db)
-  cat("Number of background (common) genes (converted):", nrow(bg_entrez), "\n\n")
+# Convert background gene symbols to Entrez IDs.
+bg_entrez <- bitr(background_genes, fromType = "SYMBOL", 
+                  toType = "ENTREZID", OrgDb = org.Mm.eg.db)
+cat("Number of background (common) genes (converted):", nrow(bg_entrez), "\n\n")
 
-  # ------------------------------
-  # Step 1: Run GO Enrichment Analysis for Each Comparison
-  # ------------------------------
-  # We assume that ToD_candidates_list is a named list with elements:
-  #   "1h_vs_0h", "6h_vs_1h", "12h_vs_6h", "24h_vs_12h", "36h_vs_24h", "48h_vs_36h", "72h_vs_48h"
-  # Each element is a data frame containing at least a column named "mgi_symbol".
-  comparison_names <- c("1h_vs_0h", "6h_vs_1h", "12h_vs_6h", "24h_vs_12h", "36h_vs_24h", "48h_vs_36h", "72h_vs_48h")
-  ontologies <- c("BP", "CC", "MF")
+# ------------------------------
+# Step 1: Run GO Enrichment Analysis for Each Comparison
+# ------------------------------
+# We assume that ToD_candidates_list is a named list with elements:
+#   "1h_vs_0h", "6h_vs_1h", "12h_vs_6h", "24h_vs_12h", "36h_vs_24h", "48h_vs_36h", "72h_vs_48h"
+# Each element is a data frame containing at least a column named "mgi_symbol".
+comparison_names <- c("1h_vs_0h", "6h_vs_1h", "12h_vs_6h", "24h_vs_12h", "36h_vs_24h", "48h_vs_36h", "72h_vs_48h")
+ontologies <- c("BP", "CC", "MF")
 
-  # ----- Step 0: Define a mapping from contrast names to the corresponding proteomics raw log₂FC column names -----
-  contrast_mapping <- c(
-    "1h_vs_0h"   = "log2FC_0m_1h",
-    "6h_vs_1h"   = "log2FC_1h_6h",
-    "12h_vs_6h"  = "log2FC_6h_12h",
-    "24h_vs_12h" = "log2FC_12h_24h",
-    "36h_vs_24h" = "log2FC_24h_36h",
-    "48h_vs_36h" = "log2FC_36h_48h",
-    "72h_vs_48h" = "log2FC_48h_72h"
-  )
+# ----- Step 0: Define a mapping from contrast names to the corresponding proteomics raw log₂FC column names -----
+contrast_mapping <- c(
+  "1h_vs_0h"   = "log2FC_0m_1h",
+  "6h_vs_1h"   = "log2FC_1h_6h",
+  "12h_vs_6h"  = "log2FC_6h_12h",
+  "24h_vs_12h" = "log2FC_12h_24h",
+  "36h_vs_24h" = "log2FC_24h_36h",
+  "48h_vs_36h" = "log2FC_36h_48h",
+  "72h_vs_48h" = "log2FC_48h_72h"
+)
 
 plots <- list()
   for (comp in comparison_names) {

@@ -1,7 +1,9 @@
 ```{r}
 #| label: Loading function and data
-list.files("R", full.names = T) |> lapply(source)
-ToD_candidates_list <- readRDS("data/processed/ToD_candidates_list.rds")
+
+library(here)
+list.files(here("R"), full.names = T) |> lapply(source)
+ToD_candidates_list <- here("data/processed", "ToD_candidates_list.rds") %>% readRDS()
 ```
 
 ```{r UTRs}
@@ -13,6 +15,8 @@ ToDC_all_utrs <- lapply(names(ToD_candidates_list), function(time_point) {
 
 # Set the names of the list to the time points
 names(ToDC_all_utrs) <- names(ToD_candidates_list)
+
+saveRDS(ToDC_all_utrs, here("data/reference", "ToDC_all_utrs.rds"))
 ```
 
 
@@ -35,9 +39,30 @@ three_prime_analysis <- analyze_utr_data(ToDC_all_utrs$`1h_vs_0h`$utr_3,
 
 ```{r}
 #| label: Meme Analsis 
-memes::check_meme_install(meme_path = "../../../../data/user/eschwall/meme/bin/")
+memes::check_meme_install(meme_path = "/meme_installation/meme-5.5.7/meme/bin/")
+library(memes)
+background_genes <- readRDS("/data/data/processed/background_genes.rds") %>% as.data.frame() %>% setNames(c("mgi_symbols"))
+all_utrs <- get_utrs(background_genes)
+all_5_UTRs <- Biostrings::DNAStringSet(all_utrs$utr_5$five_prime_utr)
+names(all_5_UTRs) <- all_utrs$utr_5$mgi_symbol
+
+h1_vs_h0_5_prime_utrs <- Biostrings::DNAStringSet(ToDC_all_utrs$`1h_vs_0h`$utr_5$five_prime_utr)
+names(h1_vs_h0_5_prime_utrs) <- ToDC_all_utrs$`1h_vs_0h`$utr_5$mgi_symbol
+
+h6_vs_h1_5_prime_utrs <- Biostrings::DNAStringSet(ToDC_all_utrs$`6h_vs_1h`$utr_5$five_prime_utr)
+names(h6_vs_h1_5_prime_utrs) <- ToDC_all_utrs$`6h_vs_1h`$utr_5$mgi_symbol
+# Write the UTR sequences to a temporary FASTA file
+Biostrings::writeXStringSet(h1_vs_h0_5_prime_utrs, here("data/reference","temp_5_prime_utrs.fasta"))
+
+runAme(input = h6_vs_h1_5_prime_utrs,
+       control = all_5_UTRs,
+       database = "/data/data/reference/motif_databases/CISBP-RNA/Mus_musculus.meme",
+       meme_path = "/meme_installation/meme-5.5.7/meme/bin/") %>% plot_ame_heatmap()
 ```
 
+```{r}
+
+```
 
 
 

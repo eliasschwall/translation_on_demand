@@ -1,0 +1,16 @@
+Version: 1.0
+ProjectId: 9b1a6926-b011-4076-99fd-2d582e370250
+
+RestoreWorkspace: Default
+SaveWorkspace: Default
+AlwaysSaveHistory: Default
+
+EnableCodeIndexing: Yes
+UseSpacesForTab: Yes
+NumSpacesForTab: 2
+Encoding: UTF-8
+
+RnwWeave: Sweave
+LaTeX: pdfLaTeX
+
+ProjectName: translation_on_demand
