@@ -1,0 +1,32 @@
+---
+title: "04_TF_behavior"
+format: html
+---
+
+```{r}
+#| label: loading ToD candidates and set up
+
+library(here)
+library(tidyverse)
+
+ToD_candidates_list <- here("data/processed", "ToD_candidates_list.rds") %>% readRDS()
+ToD_candidates_list_looser_th <- here("data/processed", "ToD_candidates_list_looser_th.rds") %>% readRDS()
+mouse_TFs <- here("data/reference", "Mus_musculus_TF.txt") %>% read_tsv()
+background_genes <- here("data/processed/background_genes.rds") %>% readRDS()
+```
+
+
+
+
+```{r}
+#| label: filtering ToD candidates for TFs
+
+ToDCs_TFs <- lapply(ToD_candidates_list, function(time_interval){
+  intersect(time_interval$mgi_symbol,mouse_TFs$Symbol)
+}) 
+
+ToDCs_TFs_looser_th <- lapply(ToD_candidates_list_looser_th, function(time_interval){
+  intersect(time_interval$mgi_symbol,mouse_TFs$Symbol)
+}) 
+```
+

@@ -19,7 +19,6 @@ names(ToDC_all_utrs) <- names(ToD_candidates_list)
 saveRDS(ToDC_all_utrs, here("data/reference", "ToDC_all_utrs.rds"))
 ```
 
-
 ```{r Analysing UTRs}
 input_genes <- ToD_candidates_list[["1h_vs_0h"]]$mgi_symbol
 
@@ -36,7 +35,6 @@ three_prime_analysis <- analyze_utr_data(ToDC_all_utrs$`1h_vs_0h`$utr_3,
                                        "three_prime")
 ```
 
-
 ```{r}
 #| label: Meme Analsis 
 memes::check_meme_install(meme_path = "/meme_installation/meme-5.5.7/meme/bin/")
@@ -51,8 +49,7 @@ names(h1_vs_h0_5_prime_utrs) <- ToDC_all_utrs$`1h_vs_0h`$utr_5$mgi_symbol
 
 h6_vs_h1_5_prime_utrs <- Biostrings::DNAStringSet(ToDC_all_utrs$`6h_vs_1h`$utr_5$five_prime_utr)
 names(h6_vs_h1_5_prime_utrs) <- ToDC_all_utrs$`6h_vs_1h`$utr_5$mgi_symbol
-# Write the UTR sequences to a temporary FASTA file
-Biostrings::writeXStringSet(h1_vs_h0_5_prime_utrs, here("data/reference","temp_5_prime_utrs.fasta"))
+
 
 runAme(input = h6_vs_h1_5_prime_utrs,
        control = all_5_UTRs,
@@ -61,179 +58,110 @@ runAme(input = h6_vs_h1_5_prime_utrs,
 ```
 
 ```{r}
+RBP_motif_enrichmets <- tod_list_ame_wrapper(todc_list = ToDC_all_utrs,
+                                             background_sequences = all_utrs,
+                                             motif_database_path = "/data/data/reference/motif_databases/CISBP-RNA/Mus_musculus.meme")
 
+saveRDS(RBP_motif_enrichmets, file = here::here("results/meme_analysis", "RBP_motif_enrichmets.rds"))
+
+RBP_motif_enrichmets_df <- rbind(RBP_motif_enrichmets$`1h_vs_0h`$utr_5, 
+                                 RBP_motif_enrichmets$`1h_vs_0h`$utr_3,
+                                 RBP_motif_enrichmets$`6h_vs_1h`$utr_5,
+                                 RBP_motif_enrichmets$`12h_vs_6h`$utr_5,
+                                 RBP_motif_enrichmets$`24h_vs_12h`$utr_5,
+                                 RBP_motif_enrichmets$`36h_vs_24h`$utr_5,
+                                 RBP_motif_enrichmets$`48h_vs_36h`$utr_5,
+                                 RBP_motif_enrichmets$`48h_vs_36h`$utr_3,
+                                 RBP_motif_enrichmets$`72h_vs_48h`$utr_5,
+                                 RBP_motif_enrichmets$`72h_vs_48h`$utr_3) %>% 
+  mutate(time_interval = c(rep("1h_vs_0h_utr_5", nrow(RBP_motif_enrichmets$`1h_vs_0h`$utr_5)),
+                           rep("1h_vs_0h_utr_3", nrow(RBP_motif_enrichmets$`1h_vs_0h`$utr_3)),
+                           rep("6h_vs_1h_utr_5", nrow(RBP_motif_enrichmets$`6h_vs_1h`$utr_5)),
+                           rep("12h_vs_6h_utr_5", nrow(RBP_motif_enrichmets$`12h_vs_6h`$utr_5)),
+                           rep("24h_vs_12h_utr_5", nrow(RBP_motif_enrichmets$`24h_vs_12h`$utr_5)),
+                           rep("36h_vs_24h_utr_5", nrow(RBP_motif_enrichmets$`36h_vs_24h`$utr_5)),
+                           rep("48h_vs_36h_utr_5", nrow(RBP_motif_enrichmets$`48h_vs_36h`$utr_5)),
+                           rep("48h_vs_36h_utr_3", nrow(RBP_motif_enrichmets$`48h_vs_36h`$utr_3)),
+                           rep("72h_vs_48h_utr_5", nrow(RBP_motif_enrichmets$`72h_vs_48h`$utr_5)),
+                           rep("72h_vs_48h_utr_3", nrow(RBP_motif_enrichmets$`72h_vs_48h`$utr_3)))) %>% 
+  relocate(time_interval, .before = rank) %>% 
+  select(-motif_db)
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-PLOTS FOR PROGRESS REPORT 2
 
 
 ```{r}
-library(DESeq2)
-library(tidyverse)
+library(gt)
+table <- RBP_motif_enrichmets_df %>% 
+  group_by(time_interval) %>% 
+  gt() %>% 
+  tab_header(title = "RNA Binding Protein Enriched Motifs",
+             subtitle = "in 5' and 3' UTRs of ToD Candidates") %>% 
+  tab_spanner(label = "Meme Ame Statistics",
+              columns = 5:17) %>% 
+  opt_stylize(style = 3) 
 
-# --- Define Comparisons for RNA ---
-rna_contrasts <- list(
-  "1h_vs_0h"  = c("timepoint", "1h",  "0h"),
-  "6h_vs_1h"  = c("timepoint", "6h",  "1h"),
-  "12h_vs_6h" = c("timepoint", "12h", "6h"),
-  "24h_vs_12h"= c("timepoint", "24h", "12h"),
-  "36h_vs_24h"= c("timepoint", "36h", "24h"),
-  "48h_vs_36h"= c("timepoint", "48h", "36h"),
-  "72h_vs_48h"= c("timepoint", "72h", "48h")
+
+gtsave(table, filename = "RNA_Binding_Protein_Enriched_Motifs.html", path = here::here("results/meme_analysis"))
+```
+
+```{r}
+# RNA binding proteins which have their binding motifs enriched in UTRs of ToDCs
+RNA_binding_proteins <- c("Nono", "Ncl", "Ybx2", "Snrnp70", "Hnrnp2", "Rbm46", "Pabpc5", 
+                          "Rbm8a", "Srsf3", "Eif2s1", "Srsf7", "Rbfox1", "Tardbp", 
+                          "ENSMUSG00000042334", "Cpeb2", "Raly", "Tial1", "Cpeb4", 
+                          "Rbmx", "Pcbp2", "Hnrnph2", "Hnrnpa2b1", "Pprc1")
+
+# filtering for which RNA binding proteins are present in the matched data 
+RNA_binding_proteins <- RNA_binding_proteins[RNA_binding_proteins %in% background_genes] 
+```
+
+
+
+```{r}
+#| label: testing out motifmatchr
+ToDC_all_utrs <- readRDS(here("data/reference", "ToDC_all_utrs.rds"))
+
+ToD_candidates_list_Biostring <- lapply(ToDC_all_utrs, function(interval) {
+  utr_5_biostring <- interval$utr_5$five_prime_utr %>%
+    Biostrings::DNAStringSet() %>%
+    setNames(., interval$utr_5$mgi_symbol)
+
+  utr_3_biostring <- interval$utr_3$three_prime_utr %>%
+    Biostrings::DNAStringSet() %>%
+    setNames(., interval$utr_3$mgi_symbol)
+
+  return(list(utr_5 = utr_5_biostring, utr_3 = utr_3_biostring))
+})
+
+lpm <- matrix(c(
+  1.000000, 0.000000, 0.000000, 0.000000,
+  0.000000, 0.000000, 1.000000, 0.000000,
+  0.000000, 0.000000, 1.000000, 0.000000,
+  0.000000, 0.000000, 1.000000, 0.000000,
+  0.896552, 0.000000, 0.000000, 0.103448
+), nrow = 4, byrow = TRUE, dimnames=list(c("A", "C", "G", "T")))
+
+
+pwm <- PWMatrix(
+  ID = "Unknown", name = "Unknown", matrixClass = "Unknown",
+  strand = "+", bg = c(A = 0.25, C = 0.25, G = 0.25, T = 0.25),
+  tags = list(), profileMatrix = matrix(), pseudocounts = numeric()
 )
 
-# --- Define Corresponding Proteomics Log2FC Columns ---
-prot_fc_cols <- c(
-  "1h_vs_0h"  = "log2FC_0m_1h",
-  "6h_vs_1h"  = "log2FC_1h_6h",
-  "12h_vs_6h" = "log2FC_6h_12h",
-  "24h_vs_12h"= "log2FC_12h_24h",
-  "36h_vs_24h"= "log2FC_24h_36h",
-  "48h_vs_36h"= "log2FC_36h_48h",
-  "72h_vs_48h"= "log2FC_48h_72h"
+
+motifmatchr::matchMotifs(
+  pwms = pwm_matrix,
+  subject = ToD_candidates_list_Biostring$`1h_vs_0h`$utr_5
 )
-
-# --- Compute Global Standard Deviation of log2FC for RNA ---
-rna_sd <- sapply(names(rna_contrasts), function(comp_name) {
-  res <- results(dds, contrast = rna_contrasts[[comp_name]])
-  sd(res$log2FoldChange, na.rm = TRUE)
-})
-names(rna_sd) <- names(rna_contrasts)
-
-# --- Compute Global Standard Deviation of log2FC for Proteomics ---
-prot_sd <- sapply(names(prot_fc_cols), function(comp_name) {
-  fc_vals <- prot_matched[[ prot_fc_cols[comp_name] ]]
-  sd(fc_vals, na.rm = TRUE)
-})
-names(prot_sd) <- names(prot_fc_cols)
-
-# --- Combine Standard Deviation Data into a Data Frame ---
-sd_df <- tibble(
-  Comparison = names(rna_sd),
-  RNA_SD = as.numeric(rna_sd),
-  Proteomics_SD = as.numeric(prot_sd)
-) %>%
-  # Order comparisons sequentially
-  mutate(Comparison = factor(Comparison, 
-                             levels = c("1h_vs_0h", "6h_vs_1h", "12h_vs_6h",
-                                        "24h_vs_12h", "36h_vs_24h", "48h_vs_36h", "72h_vs_48h"))) %>%
-  # Replace only the literal "_vs_" with " vs " for prettier labels
-  mutate(Comparison = as.character(Comparison),
-         Comparison = gsub("_vs_", " vs ", Comparison),
-         Comparison = factor(Comparison, levels = unique(Comparison)))
-
-# Print the computed standard deviations
-print("Computed Standard Deviations for Each Timepoint Comparison:")
-print(sd_df)
-
-# Reshape data for plotting
-sd_long <- sd_df %>%
-  pivot_longer(cols = c("RNA_SD", "Proteomics_SD"),
-               names_to = "DataType",
-               values_to = "SD") %>%
-  mutate(DataType = recode(DataType, 
-                           "RNA_SD" = "RNA", 
-                           "Proteomics_SD" = "Proteomics"))
-
-# --- Create the Publication-Quality Plot with Larger Fonts ---
-ggplot(sd_long, aes(x = Comparison, y = SD, fill = DataType)) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.8)) +
-  scale_fill_manual(values = c("RNA" = "#4C72B0", "Proteomics" = "#C44E52")) +
-  labs(title = "Global Standard Deviation of Log₂ Fold Changes by Timepoint Comparison",
-       x = "Timepoint Comparison",
-       y = "Standard Deviation of Log₂ Fold Change",
-       fill = "Data Type") +
-  theme_classic(base_size = 18) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 18),
-        axis.text.y = element_text(size = 18),
-        axis.title.x = element_text(size = 20),
-        axis.title.y = element_text(size = 20),
-        plot.title = element_text(size = 22, face = "bold"),
-        legend.title = element_text(size = 18),
-        legend.text = element_text(size = 16))
 ```
 
 
 
-```{r ratios plot} 
-library(tidyverse)
-
-# Combine the matched stable genes from all contrasts into one data frame.
-# (Assumes matched_list contains only the matched stable genes for each contrast.)
-diff_df <- bind_rows(lapply(names(matched_list), function(comp) {
-  df <- matched_list[[comp]]
-  df$Comparison <- comp  # add a column with the contrast name
-  df
-}))
-
-# Reformat the comparison labels (e.g., "1h_vs_0h" becomes "1h vs 0h") and set the factor levels in order.
-diff_df <- diff_df %>%
-  mutate(Comparison = gsub("_vs_", " vs ", Comparison)) %>%
-  mutate(Comparison = factor(Comparison, levels = c("1h vs 0h", 
-                                                    "6h vs 1h", 
-                                                    "12h vs 6h", 
-                                                    "24h vs 12h", 
-                                                    "36h vs 24h", 
-                                                    "48h vs 36h", 
-                                                    "72h vs 48h")))
-
-# Create a density plot of the "diff" values for the matched stable genes.
-p_diff <- ggplot(diff_df, aes(x = diff, color = Comparison)) +
-  geom_density(size = 1.5) +
-  labs(title = "Density of log₂FC Differences for Matched Stable Genes",
-       x = "Difference (Proteomics - RNA log₂FC)",
-       y = "Density",
-       color = "Timepoint Comparison") +
-  theme_classic(base_size = 24) +
-  theme(axis.text.x = element_text(size = 22, angle = 45, hjust = 1),
-        axis.text.y = element_text(size = 22),
-        axis.title.x = element_text(size = 26),
-        axis.title.y = element_text(size = 26),
-        plot.title = element_text(size = 28, face = "bold"),
-        legend.title = element_text(size = 26),
-        legend.text = element_text(size = 24),
-        legend.position = c(0.8, 0.8)) +
-  guides(color = guide_legend(reverse = TRUE, ncol = 1))
-
-print(p_diff)
-```
 
 
-```{r Variance scaling matched proteomics within each timepoint comparison}
 
-prot_matched_scaled <- prot_matched %>%
-  dplyr::mutate(across(dplyr::starts_with("log2FC_"),
-                       ~ . / sd(., na.rm = TRUE),
-                       .names = "{.col}_scaled"))
 
-# Print summary statistics for each scaled column.
-scaled_cols <- names(prot_matched_scaled)[grepl("_scaled$", names(prot_matched_scaled))]
-for (col in scaled_cols) {
-  cat("Summary for", col, ":\n")
-  print(summary(prot_matched_scaled[[col]]))
-  cat("-----\n")
-}
 
-# Optionally, if you want to inspect the first few rows:
-print(head(prot_matched_scaled))
-```
+
+
+
