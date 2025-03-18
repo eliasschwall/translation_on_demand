@@ -1,0 +1,4 @@
+- source: tod_dashboard.qmd
+  quarto-pub:
+    - id: b69e089a-18ba-45ae-9485-c59fe55e1696
+      url: 'https://eschwall.quarto.pub/translation-on-demand'
