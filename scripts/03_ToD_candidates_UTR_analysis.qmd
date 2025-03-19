@@ -2,6 +2,7 @@
 #| label: Loading function and data
 
 library(here)
+library(tidyverse)
 list.files(here("R"), full.names = T) |> lapply(source)
 ToD_candidates_list <- here("data/processed", "ToD_candidates_list.rds") %>% readRDS()
 ```
@@ -105,20 +106,44 @@ gtsave(table, filename = "RNA_Binding_Protein_Enriched_Motifs.html", path = here
 ```
 
 ```{r}
-# RNA binding proteins which have their binding motifs enriched in UTRs of ToDCs
-RNA_binding_proteins <- c("Nono", "Ncl", "Ybx2", "Snrnp70", "Hnrnp2", "Rbm46", "Pabpc5", 
-                          "Rbm8a", "Srsf3", "Eif2s1", "Srsf7", "Rbfox1", "Tardbp", 
-                          "ENSMUSG00000042334", "Cpeb2", "Raly", "Tial1", "Cpeb4", 
-                          "Rbmx", "Pcbp2", "Hnrnph2", "Hnrnpa2b1", "Pprc1")
+background_genes <- here("data/processed", "background_genes.rds") %>% readRDS()
 
-# filtering for which RNA binding proteins are present in the matched data 
-RNA_binding_proteins <- RNA_binding_proteins[RNA_binding_proteins %in% background_genes] 
+
+# RNA binding proteins which have their binding motifs enriched in UTRs of ToDCs
+RNA_binding_proteins <- c(
+  "M307_0.6" = "Nono",
+  "M245_0.6" = "Ncl",
+  "M082_0.6" = "Ybx2",
+  "M068_0.6" = "Snrnp70",
+  "M151_0.6" = "Hnrnph2",
+  "M052_0.6" = "Rbm46",
+  "M162_0.6" = "Pabpc5",
+  "M054_0.6" = "Rbm8a",
+  "M056_0.6" = "Srsf3",
+  "M231_0.6" = "Eif2s1",
+  "M331_0.6" = "Srs7",
+  "M159_0.6" = "Rbfox1",
+  "M074_0.6" = "Tardbp",
+  "M050_0.6" = "ENSMUSG00000056951",
+  "M109_0.6" = "Rbm4b",
+  "M012_0.6" = "Cpeb2",
+  "M150_0.6" = "Raly",
+  "M075_0.6" = "Tial1",
+  "M149_0.6" = "Cpeb4",
+  "M344_0.6" = "Rbmx",
+  "M043_0.6" = "Pcbp2",
+  "M024_0.6" = "Hnrpa2b1",
+  "M044_0.6" = "Prrc1"
+)
+
+# filtering for which RNA binding proteins are present in the matched data
+RNA_binding_proteins <- RNA_binding_proteins[RNA_binding_proteins %in% background_genes]
 ```
 
 
 
 ```{r}
-#| label: testing out motifmatchr
+#| label: 
 ToDC_all_utrs <- readRDS(here("data/reference", "ToDC_all_utrs.rds"))
 
 ToD_candidates_list_Biostring <- lapply(ToDC_all_utrs, function(interval) {
@@ -133,26 +158,22 @@ ToD_candidates_list_Biostring <- lapply(ToDC_all_utrs, function(interval) {
   return(list(utr_5 = utr_5_biostring, utr_3 = utr_3_biostring))
 })
 
-lpm <- matrix(c(
-  1.000000, 0.000000, 0.000000, 0.000000,
-  0.000000, 0.000000, 1.000000, 0.000000,
-  0.000000, 0.000000, 1.000000, 0.000000,
-  0.000000, 0.000000, 1.000000, 0.000000,
-  0.896552, 0.000000, 0.000000, 0.103448
-), nrow = 4, byrow = TRUE, dimnames=list(c("A", "C", "G", "T")))
+# reading the meme db file we used for AME 
+meme_CISBP_motifs <- universalmotif::read_meme("data/reference/motif_databases/CISBP-RNA/Mus_musculus.meme") %>% 
+  universalmotif::convert_type(., "PWM")
 
+# now filtering for the enriched motifs which were also found in our matched RNA and protein data
+meme_CISBP_motifs_filtered <- lapply(meme_CISBP_motifs, function(motif){
+  if(motif@name %in% names(RNA_binding_proteins)){
+    return(motif)
+  }
+}) %>% discard(is.null)
 
-pwm <- PWMatrix(
-  ID = "Unknown", name = "Unknown", matrixClass = "Unknown",
-  strand = "+", bg = c(A = 0.25, C = 0.25, G = 0.25, T = 0.25),
-  tags = list(), profileMatrix = matrix(), pseudocounts = numeric()
-)
+test <- Biostrings::RNAStringSet(ToD_candidates_list_Biostring$`1h_vs_0h`$utr_5)
 
+matched_motifs_in_ToD_genes <- universalmotif::scan_sequences(meme_CISBP_motifs_filtered, test[Biostrings::width(test) > 20]) %>% 
+  as.data.frame() 
 
-motifmatchr::matchMotifs(
-  pwms = pwm_matrix,
-  subject = ToD_candidates_list_Biostring$`1h_vs_0h`$utr_5
-)
 ```
 
 

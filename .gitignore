@@ -1,10 +1,10 @@
 # Project related 
 /data
 # for plots 
-.png
-.pdf
-.jpeg
-.svg
+*.png
+*.pdf
+*.jpeg
+*.svg
 
 
 
