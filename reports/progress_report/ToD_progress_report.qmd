@@ -1,0 +1,78 @@
+---
+title: "Translation on Demand"
+subtitle: "Progress Report"
+author: "Elias Schwall"
+format: revealjs
+---
+
+## RNA-binding proteins motif enrichment
+1. get the UTR sequences of ToD candidates using biomaRt 
+  - potential problem: retrievs UTR for each isoform -> gene with more isoforms can potentially screw enrichment
+2. get the UTR of all genes (matched transcriptomic & proteomic data) for background using biomaRt
+3. run AME (Meme)
+4. retrieving the ToD candidates that carry the enriched motifs using `universalmotif::scan_sequences()`
+
+
+
+## UTR motifs
+1. No meme databse available on UTR motifs 
+- potential solution: curate custom motif list
+
+## 
+- M307 (Nono): RNA splicing, DNA repair, transcription regulation, and immune response
+```{r}
+library(tidyverse)
+ToD_genes_carrying_RBP_motifs <- here::here("results/meme_analysis", "ToD_genes_carrying_RBP_motifs.rds") %>% 
+  readRDS()
+
+library(gt)
+ToD_genes_carrying_RBP_motifs$`1h_vs_0h`$utr_5 %>% 
+  group_by(motif) %>% 
+  gt() %>% 
+  tab_header(title = "ToD genes carrying RBP motifs",
+             subtitle = "in 5' UTRs of ToD Candidates 0h to 1h") %>% 
+  opt_stylize(style = 3) %>% 
+   tab_options(table.width = pct(100),  # Adjust table width
+              table.font.size = 10,  # Adjust font size
+              container.height = px(800), 
+              container.overflow.y = "auto")
+```
+
+## 
+:::: {.columns}
+
+::: {.column width="30%"}
+- M082 (Ybx2): The major constituent of messenger ribonucleoprotein particles (mRNPs) regulates germ cell mRNA stability and translation. It binds to the Y-box consensus promoter and full-length mRNA with high affinity. It also interacts with short RNA sequences (5'-UCCAUCA-3') with lower affinity. This protein is crucial for the cytoplasmic retention of maternal mRNAs and may mark Y-box promoter-transcribed mRNAs for cytoplasmic storage, linking transcription to mRNA storage and translational delay.
+:::
+
+::: {.column width="70%"}
+```{r}
+ToD_genes_carrying_RBP_motifs$`1h_vs_0h`$utr_3 %>% 
+  group_by(motif) %>% 
+  gt() %>% 
+  tab_header(title = "ToD genes carrying RBP motifs",
+             subtitle = "in 3' UTRs of ToD Candidates 0h to 1h") %>% 
+  opt_stylize(style = 3) %>% 
+   tab_options(table.width = pct(100),  # Adjust table width
+              table.font.size = 10,  # Adjust font size
+              container.height = px(800), 
+              container.overflow.y = "auto")
+```
+:::
+
+::::
+
+##
+
+```{r}
+ToD_genes_carrying_RBP_motifs$`6h_vs_1h`$utr_5 %>% 
+  group_by(motif) %>% 
+  gt() %>% 
+  tab_header(title = "ToD genes carrying RBP motifs",
+             subtitle = "in 5' UTRs of ToD Candidates 1h to 6h") %>% 
+  opt_stylize(style = 3) %>% 
+   tab_options(table.width = pct(100),  # Adjust table width
+              table.font.size = 10,  # Adjust font size
+              container.height = px(800), 
+              container.overflow.y = "auto")
+```

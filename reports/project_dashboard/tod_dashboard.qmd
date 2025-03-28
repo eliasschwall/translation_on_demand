@@ -1,6 +1,8 @@
 ---
 title: "Translation on Demand"
 format: dashboard
+css: "styling.css" 
+logo: "CECAD-Logo-24-white.svg"
 embed-resources: true
 ---
 

@@ -143,7 +143,7 @@ RNA_binding_proteins <- RNA_binding_proteins[RNA_binding_proteins %in% backgroun
 
 
 ```{r}
-#| label: 
+#| label: converting ToD UTRs in Biostings
 ToDC_all_utrs <- readRDS(here("data/reference", "ToDC_all_utrs.rds"))
 
 ToD_candidates_list_Biostring <- lapply(ToDC_all_utrs, function(interval) {
@@ -157,31 +157,44 @@ ToD_candidates_list_Biostring <- lapply(ToDC_all_utrs, function(interval) {
 
   return(list(utr_5 = utr_5_biostring, utr_3 = utr_3_biostring))
 })
-
-# reading the meme db file we used for AME 
-meme_CISBP_motifs <- universalmotif::read_meme("data/reference/motif_databases/CISBP-RNA/Mus_musculus.meme") %>% 
-  universalmotif::convert_type(., "PWM")
-
-# now filtering for the enriched motifs which were also found in our matched RNA and protein data
-meme_CISBP_motifs_filtered <- lapply(meme_CISBP_motifs, function(motif){
-  if(motif@name %in% names(RNA_binding_proteins)){
-    return(motif)
-  }
-}) %>% discard(is.null)
-
-test <- Biostrings::RNAStringSet(ToD_candidates_list_Biostring$`1h_vs_0h`$utr_5)
-
-matched_motifs_in_ToD_genes <- universalmotif::scan_sequences(meme_CISBP_motifs_filtered, test[Biostrings::width(test) > 20]) %>% 
-  as.data.frame() 
-
 ```
 
 
 
+```{r}
+#| label: checking which genes carry the enriched motifs of the ToD candidates
 
+# loading the enrichment results
+RBP_motif_enrichmets <- here::here("results/meme_analysis", "RBP_motif_enrichmets.rds") %>% readRDS()
+# reading the meme db file we used for AME
+meme_CISBP_motifs <- here::here("data/reference/motif_databases", "CISBP-RNA/Mus_musculus.meme") %>%
+  universalmotif::read_meme() %>%
+  universalmotif::convert_type(., "PWM")
 
+ToDCs_that_carry_motif_for_enriched_RBP_motifs <- list()
+for (interval in names(RBP_motif_enrichmets)) {
+  enriched_utrs <- RBP_motif_enrichmets[[interval]]
+  for (enriched_utr in names(enriched_utrs)) {
+    motif_ids <- RBP_motif_enrichmets[[interval]][[enriched_utr]]$motif_id
+    meme_CISBP_motifs_filtered <- lapply(meme_CISBP_motifs, function(motif) {
+      if (motif@name %in% motif_ids) {
+        return(motif)
+      }
+    }) %>% discard(is.null)
+    ToDCs <- ToD_candidates_list_Biostring[[interval]][[enriched_utr]] %>% Biostrings::RNAStringSet()
+    matched_motifs_in_ToD_genes <- universalmotif::scan_sequences(meme_CISBP_motifs_filtered, ToDCs[Biostrings::width(ToDCs) > 20]) %>%
+      as.data.frame() %>% 
+      group_by(motif) %>% 
+      distinct(sequence, .keep_all = TRUE) %>% 
+      ungroup() %>% 
+      dplyr::filter(motif %in% names(RNA_binding_proteins)) # this filters the df to only inlcude motifs that are targets of expressed proteins
+    # Append the result to the list
+    ToDCs_that_carry_motif_for_enriched_RBP_motifs[[interval]][[enriched_utr]] <- matched_motifs_in_ToD_genes
+  }
+}
 
-
+saveRDS(ToDCs_that_carry_motif_for_enriched_RBP_motifs, here::here("results/meme_analysis", "ToD_genes_carrying_RBP_motifs.rds"))
+```
 
 
 
