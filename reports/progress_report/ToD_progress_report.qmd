@@ -6,20 +6,25 @@ format: revealjs
 ---
 
 ## RNA-binding proteins motif enrichment
-1. get the UTR sequences of ToD candidates using biomaRt 
-  - potential problem: retrievs UTR for each isoform -> gene with more isoforms can potentially screw enrichment
-2. get the UTR of all genes (matched transcriptomic & proteomic data) for background using biomaRt
-3. run AME (Meme)
-4. retrieving the ToD candidates that carry the enriched motifs using `universalmotif::scan_sequences()`
 
+1.  get the UTR sequences of ToD candidates using biomaRt
 
+-   potential problem: retrievs UTR for each isoform -\> gene with more isoforms can potentially screw enrichment
+
+2.  get the UTR of all genes (matched transcriptomic & proteomic data) for background using biomaRt
+3.  run AME (Meme)
+4.  retrieving the ToD candidates that carry the enriched motifs using `universalmotif::scan_sequences()`
 
 ## UTR motifs
-1. No meme databse available on UTR motifs 
-- potential solution: curate custom motif list
+
+1.  No meme databse available on UTR motifs
+
+-   potential solution: curate custom motif list
 
 ## 
-- M307 (Nono): RNA splicing, DNA repair, transcription regulation, and immune response
+
+-   M307 (Nono): RNA splicing, DNA repair, transcription regulation, and immune response
+
 ```{r}
 library(tidyverse)
 ToD_genes_carrying_RBP_motifs <- here::here("results/meme_analysis", "ToD_genes_carrying_RBP_motifs.rds") %>% 
@@ -39,10 +44,10 @@ ToD_genes_carrying_RBP_motifs$`1h_vs_0h`$utr_5 %>%
 ```
 
 ## 
-:::: {.columns}
 
+::::: columns
 ::: {.column width="30%"}
-- M082 (Ybx2): The major constituent of messenger ribonucleoprotein particles (mRNPs) regulates germ cell mRNA stability and translation. It binds to the Y-box consensus promoter and full-length mRNA with high affinity. It also interacts with short RNA sequences (5'-UCCAUCA-3') with lower affinity. This protein is crucial for the cytoplasmic retention of maternal mRNAs and may mark Y-box promoter-transcribed mRNAs for cytoplasmic storage, linking transcription to mRNA storage and translational delay.
+-   M082 (Ybx2): The major constituent of messenger ribonucleoprotein particles (mRNPs) regulates germ cell mRNA stability and translation. It binds to the Y-box consensus promoter and full-length mRNA with high affinity. It also interacts with short RNA sequences (5'-UCCAUCA-3') with lower affinity. This protein is crucial for the cytoplasmic retention of maternal mRNAs and may mark Y-box promoter-transcribed mRNAs for cytoplasmic storage, linking transcription to mRNA storage and translational delay.
 :::
 
 ::: {.column width="70%"}
@@ -59,10 +64,9 @@ ToD_genes_carrying_RBP_motifs$`1h_vs_0h`$utr_3 %>%
               container.overflow.y = "auto")
 ```
 :::
+:::::
 
-::::
-
-##
+## 
 
 ```{r}
 ToD_genes_carrying_RBP_motifs$`6h_vs_1h`$utr_5 %>% 
@@ -76,3 +80,76 @@ ToD_genes_carrying_RBP_motifs$`6h_vs_1h`$utr_5 %>%
               container.height = px(800), 
               container.overflow.y = "auto")
 ```
+
+## 
+
+::::: columns
+::: {.column width="30%"}
+```{r}
+ # Load the gt library
+library(gt)
+
+# Create a data frame with the gene information
+gene_data <- data.frame(
+  Gene = c("Aass", "Agap1", "Axin1", "Btbdb9", "Cacna1a", 
+           "Cdc42bpa", "Cfap74", "Csrnp2", "Cttnbp2", "Dennd1b", 
+           "Dnajc14", "Ebpl", "Fbxo9", "Flvcr2", "Gramd1b", 
+           "Mlh3", "Otud5", "Pknox1", "Rassf1", "Raver2", 
+           "Rgs19", "Rhob", "Rsrp1", "Slain1", "Stil", 
+           "Taf11", "Toml2", "Ttlil5", "Zfp850", "Zik1"),
+  Function = c("Involved in amino acid metabolism",
+                           "Regulates actin cytoskeleton dynamics",
+                           "Plays a role in Wnt signaling pathway",
+                           "Involved in protein-protein interactions",
+                           "Encodes a calcium channel, important for neurotransmission",
+                           "Involved in cell signaling and cytoskeletal organization",
+                           "Associated with cilia and flagella function",
+                           "Involved in RNA binding and regulation",
+                           "Plays a role in Wnt signaling and cell adhesion",
+                           "Involved in endosomal trafficking",
+                           "Heat shock protein involved in protein folding",
+                           "Involved in mitochondrial function",
+                           "Part of the ubiquitin-proteasome system",
+                           "Involved in heme transport",
+                           "Associated with lipid metabolism",
+                           "Involved in DNA repair processes",
+                           "Plays a role in ubiquitin signaling",
+                           "Involved in transcriptional regulation",
+                           "Associated with cell cycle regulation",
+                           "Involved in RNA splicing and transport",
+                           "Regulates G protein signaling",
+                           "Involved in cytoskeletal dynamics",
+                           "Plays a role in RNA splicing",
+                           "Involved in cytoskeletal organization",
+                           "Associated with cell cycle regulation",
+                           "Involved in transcription regulation",
+                           "Associated with mitochondrial function",
+                           "Involved in RNA processing",
+                           "Transcription factor involved in gene regulation",
+                           "Involved in cellular signaling")
+)
+
+# Create the gt table
+gene_data %>%
+  gt()  %>% 
+  tab_header(title = "ToDC carrying M082 (Ybx2) target motif") %>% 
+  opt_stylize(style = 3) %>% 
+   tab_options(table.width = pct(100),  # Adjust table width
+              table.font.size = 10,  # Adjust font size
+              container.height = px(800), 
+              container.overflow.y = "auto")
+
+```
+:::
+
+::: {.column width="70%"}
+-   Cellular Functions: cellular processes such as signaling, transcription regulation, and cytoskeletal dynamics.
+
+-   Metabolism: metabolic pathways, particularly related to amino acids and lipids
+
+-   Development and Growth: developmental processes and cell cycle regulation.
+
+-   Protein Interactions
+:::
+:::::
+

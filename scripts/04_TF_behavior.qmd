@@ -30,3 +30,63 @@ ToDCs_TFs_looser_th <- lapply(ToD_candidates_list_looser_th, function(time_inter
 }) 
 ```
 
+
+```{r}
+#| label: looking at the temporal behavior of ToD TFs
+matched_list <- readRDS(here::here("data/processed", "matched_list.rds"))
+
+# merge all time points in one df
+merged_matched <- Reduce(function(x, y) merge(x, y, by = "mgi_symbol", all = TRUE), matched_list) %>%
+  janitor::clean_names() %>%
+  select(mgi_symbol, colnames(.)[str_detect(colnames(.), "diff")]) %>%
+  setNames(c("gene", "h0_h1", "h1_h6", "h6_h12", "h12_h24", "h24_h36", "h36_h48", "h48_h72"))
+
+# filtering this df for all ToD TFs
+ToDCs_TFs_all <- c(
+  ToDCs_TFs$`1h_vs_0h`,
+  ToDCs_TFs$`6h_vs_1h`,
+  ToDCs_TFs$`12h_vs_6h`,
+  ToDCs_TFs$`24h_vs_12h`,
+  ToDCs_TFs$`36h_vs_24h`,
+  ToDCs_TFs$`48h_vs_36h`,
+  ToDCs_TFs$`72h_vs_48h`
+)
+
+merged_matched_TFs <- merged_matched %>% filter(gene %in% ToDCs_TFs_all)
+
+# Transform the data for ggplot
+data_long <- merged_matched_TFs %>%
+  pivot_longer(cols = -gene, names_to = "timepoint", values_to = "value") %>%
+  mutate(timepoint = recode(timepoint,
+    h0_h1 = "0-1h",
+    h1_h6 = "1-6h",
+    h6_h12 = "6-12h",
+    h12_h24 = "12-24h",
+    h24_h36 = "24-36h"
+  ))
+
+# Create the plot
+p <- ggplot(data_long, aes(x = timepoint, y = value, group = gene, color = gene)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "TF Prot-RNA-LFC-Ratio Over Time", y = "Prot-RNA-LFC-Ratio") +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+  annotate("text", x = 7.5, y = 1.5, label = "ToDC", color = "red")+
+theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+# Convert to plotly
+p_plotly <- plotly::ggplotly(p, tooltip = c("gene", "value"))
+
+# Set all traces to be turned off by default
+for (i in 1:length(p_plotly$x$data)) {
+  if (i != 105 && i != 106) {  # Replace y_intercept_index with the actual index of your y-intercept line
+    p_plotly$x$data[[i]]$visible <- "legendonly"
+  }
+}
+
+# Show the plot
+p_plotly
+
+htmlwidgets::saveWidget(p_plotly, here::here("results/", "TF_Prot_RNA_LFC_Ratio_temporal_behavoir.html"))
+```

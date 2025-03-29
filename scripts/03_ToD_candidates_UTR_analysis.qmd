@@ -65,6 +65,8 @@ RBP_motif_enrichmets <- tod_list_ame_wrapper(todc_list = ToDC_all_utrs,
 
 saveRDS(RBP_motif_enrichmets, file = here::here("results/meme_analysis", "RBP_motif_enrichmets.rds"))
 
+readRDS(here::here("results/meme_analysis", "RBP_motif_enrichmets.rds"))
+
 RBP_motif_enrichmets_df <- rbind(RBP_motif_enrichmets$`1h_vs_0h`$utr_5, 
                                  RBP_motif_enrichmets$`1h_vs_0h`$utr_3,
                                  RBP_motif_enrichmets$`6h_vs_1h`$utr_5,
