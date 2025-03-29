@@ -1,9 +1,273 @@
 ---
 title: "Translation on Demand"
 format: dashboard
-css: "styling.css" 
-logo: "CECAD-Logo-24-white.svg"
+logo: "CECAD-Logo-24-white.png"
+theme: minty
 embed-resources: true
+scrollable: true
+nav-buttons:
+      - icon: github
+        href: https://github.com/eliasschwall/translation_on_demand
 ---
 
-# Testing the dashboard
+```{r set up}
+#| label: set up chunk
+
+library(tidyverse)
+library(gt)
+```
+
+# Data Overview 
+
+## Row 
+```{r update valuebox}
+#| content: valuebox
+#| title: "Latest update"
+list(
+  icon = "clock",
+  color = "secondary",
+  value = Sys.Date()
+)
+```
+
+::: {.card title="Data Source"}
+The data used for this project is from Yang et al., 2019: [Multi-omic Profiling Reveals Dynamics of the Phased Progression of Pluripotency](https://www.sciencedirect.com/science/article/pii/S2405471219301152?via%3Dihub).
+
+- [Table S2](https://ars.els-cdn.com/content/image/1-s2.0-S2405471219301152-mmc3.xlsx): Temporal Proteomic Data (0min, 30min, 1h, 6h, 12h, 24h, 36h, 48h, and 72h)
+- [Table S3](https://ars.els-cdn.com/content/image/1-s2.0-S2405471219301152-mmc4.xlsx): Temporal Transcriptomic (RNA-Seq) Data (0min, 1h, 6h, 12h, 24h, 36h, 48h, and 72h)
+
+For the purpuse of our project we realigned the count data for the transcriptomic data with the M11 mouse genome using STAR. 
+:::
+
+## Row
+
+```{r displaying source data proteome}
+#| title: Proteome Data Head
+
+proteomic_yang_data <- here::here("data/processed/yang_paper", "yang_proteomics.rds") %>% readRDS()
+
+proteomic_yang_data %>% 
+  head() %>% 
+  gt()
+```
+
+## Row
+
+```{r displaying source data transcriptome}
+#| title: Transcriptome Data Head
+
+transcriptomic_yang_data <- here::here("data/raw/yang_paper", "transcriptomic_counts.csv") |> read.csv()
+
+transcriptomic_yang_data %>% 
+  head() %>% 
+  gt()
+```
+
+# ToD Filtering 
+
+# GO Enrichment 
+
+# TF Analysis
+
+# Motif Analysis 
+
+## Row
+
+```{r}
+#| title: RNA Binding Protein Target Motifs Enriched in ToD Candidates
+
+readRDS(here::here("results/meme_analysis", "RBP_motif_enrichmets_df.rds")) %>% 
+  group_by(time_interval) %>% 
+  gt() %>% 
+  tab_header(title = "RNA Binding Protein Enriched Motifs",
+             subtitle = "in 5' and 3' UTRs of ToD Candidates") %>% 
+  tab_spanner(label = "Meme Ame Statistics",
+              columns = 6:17) 
+```
+
+## Row {.tabset title="ToD candidates carrying RBP motifs"} 
+```{r}
+#| title: 0h to 1h 5' UTRs
+
+ToD_genes_carrying_RBP_motifs <- here::here("results/meme_analysis", "ToD_genes_carrying_RBP_motifs.rds") %>% 
+  readRDS()
+
+library(gt)
+
+# Assuming ToD_genes_carrying_RBP_motifs is defined and contains your data
+ToD_genes_carrying_RBP_motifs$`1h_vs_0h`$utr_5 %>%
+  group_by(motif) %>%
+  gt() %>%
+  tab_header(
+    title = "ToD genes carrying RBP motifs",
+    subtitle = "in 5' UTRs of ToD Candidates 0h to 1h"
+  ) %>%
+  tab_options(
+    table.width = pct(100),  # Adjust table width
+    table.font.size = 10,  # Adjust font size
+    container.height = px(800),
+    container.overflow.y = "auto"
+  )
+```
+
+```{r}
+#| title: 0h to 1h 3' UTRs
+
+ToD_genes_carrying_RBP_motifs$`1h_vs_0h`$utr_3 %>%
+  group_by(motif) %>%
+  gt() %>%
+  tab_header(
+    title = "ToD genes carrying RBP motifs",
+    subtitle = "in 3' UTRs of ToD Candidates 0h to 1h"
+  ) %>%
+  tab_options(
+    table.width = pct(100),  # Adjust table width
+    table.font.size = 10,  # Adjust font size
+    container.height = px(800),
+    container.overflow.y = "auto"
+  )
+```
+
+```{r}
+#| title: 1h to 6h 5' UTRs
+
+ToD_genes_carrying_RBP_motifs$`6h_vs_1h`$utr_5 %>%
+  group_by(motif) %>%
+  gt() %>%
+  tab_header(
+    title = "ToD genes carrying RBP motifs",
+    subtitle = "in 5' UTRs of ToD Candidates 1h to 6h"
+  ) %>%
+  tab_options(
+    table.width = pct(100),  # Adjust table width
+    table.font.size = 10,  # Adjust font size
+    container.height = px(800),
+    container.overflow.y = "auto"
+  )
+```
+
+```{r}
+#| title: 6h to 12h 5' UTRs
+
+ToD_genes_carrying_RBP_motifs$`12h_vs_6h`$utr_5 %>%
+  group_by(motif) %>%
+  gt() %>%
+  tab_header(
+    title = "ToD genes carrying RBP motifs",
+    subtitle = "in 5' UTRs of ToD Candidates 6h to 12h"
+  ) %>%
+  tab_options(
+    table.width = pct(100),  # Adjust table width
+    table.font.size = 10,  # Adjust font size
+    container.height = px(800),
+    container.overflow.y = "auto"
+  )
+```
+
+```{r}
+#| title: 12h to 24h 5' UTRs
+
+ToD_genes_carrying_RBP_motifs$`24h_vs_12h`$utr_5 %>%
+  group_by(motif) %>%
+  gt() %>%
+  tab_header(
+    title = "ToD genes carrying RBP motifs",
+    subtitle = "in 5' UTRs of ToD Candidates 12h to 24h"
+  ) %>%
+  tab_options(
+    table.width = pct(100),  # Adjust table width
+    table.font.size = 10,  # Adjust font size
+    container.height = px(800),
+    container.overflow.y = "auto"
+  )
+```
+
+```{r}
+#| title: 24h to 36h 5' UTRs
+
+ToD_genes_carrying_RBP_motifs$`36h_vs_24h`$utr_5 %>%
+  group_by(motif) %>%
+  gt() %>%
+  tab_header(
+    title = "ToD genes carrying RBP motifs",
+    subtitle = "in 5' UTRs of ToD Candidates 24h to 36h"
+  ) %>%
+  tab_options(
+    table.width = pct(100),  # Adjust table width
+    table.font.size = 10,  # Adjust font size
+    container.height = px(800),
+    container.overflow.y = "auto"
+  )
+```
+
+```{r}
+#| title: 36h to 48h 5' UTRs
+
+ToD_genes_carrying_RBP_motifs$`48h_vs_36h`$utr_5 %>%
+  group_by(motif) %>%
+  gt() %>%
+  tab_header(
+    title = "ToD genes carrying RBP motifs",
+    subtitle = "in 5' UTRs of ToD Candidates 36h to 48h"
+  ) %>%
+  tab_options(
+    table.width = pct(100),  # Adjust table width
+    table.font.size = 10,  # Adjust font size
+    container.height = px(800),
+    container.overflow.y = "auto"
+  )
+```
+
+```{r}
+#| title: 36h to 48h 3' UTRs
+
+ToD_genes_carrying_RBP_motifs$`48h_vs_36h`$utr_3 %>%
+  group_by(motif) %>%
+  gt() %>%
+  tab_header(
+    title = "ToD genes carrying RBP motifs",
+    subtitle = "in 3' UTRs of ToD Candidates 36h to 48h"
+  ) %>%
+  tab_options(
+    table.width = pct(100),  # Adjust table width
+    table.font.size = 10,  # Adjust font size
+    container.height = px(800),
+    container.overflow.y = "auto"
+  )
+```
+
+```{r}
+#| title: 48h to 72h 5' UTRs
+
+ToD_genes_carrying_RBP_motifs$`72h_vs_48h`$utr_5 %>%
+  group_by(motif) %>%
+  gt() %>%
+  tab_header(
+    title = "ToD genes carrying RBP motifs",
+    subtitle = "in 5' UTRs of ToD Candidates 48h to 72h"
+  ) %>%
+  tab_options(
+    table.width = pct(100),  # Adjust table width
+    table.font.size = 10,  # Adjust font size
+    container.height = px(800),
+    container.overflow.y = "auto"
+  )
+```
+
+```{r}
+#| title: 48h to 72h 3' UTRs
+
+ToD_genes_carrying_RBP_motifs$`72h_vs_48h`$utr_3 %>%
+  group_by(motif) %>%
+  gt() %>%
+  tab_header(
+    title = "ToD genes carrying RBP motifs",
+    subtitle = "in 3' UTRs of ToD Candidates 48h to 72h"
+  ) %>%
+  tab_options(
+    table.width = pct(100),  # Adjust table width
+    table.font.size = 10,  # Adjust font size
+    container.height = px(800),
+    container.overflow.y = "auto"
+  )
+```
