@@ -185,6 +185,8 @@ for (comp in comparison_names) {
 
 
 ```{r saving plots}
+
+saveRDS(plots, file = here::here("results/GO_Kegg_Enrichment_ToD_candidates", "GO_Kegg_Enrichment_ToD_candidates.rds"))
 # Open a PDF device
 pdf(here::here("results/GO_Kegg_Enrichment_ToD_candidates", "GO_Kegg_Enrichment_ToD_candidates.pdf"))
 

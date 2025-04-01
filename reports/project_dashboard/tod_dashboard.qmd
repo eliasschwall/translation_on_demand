@@ -38,7 +38,7 @@ The data used for this project is from Yang et al., 2019: [Multi-omic Profiling 
 - [Table S2](https://ars.els-cdn.com/content/image/1-s2.0-S2405471219301152-mmc3.xlsx): Temporal Proteomic Data (0min, 30min, 1h, 6h, 12h, 24h, 36h, 48h, and 72h)
 - [Table S3](https://ars.els-cdn.com/content/image/1-s2.0-S2405471219301152-mmc4.xlsx): Temporal Transcriptomic (RNA-Seq) Data (0min, 1h, 6h, 12h, 24h, 36h, 48h, and 72h)
 
-For the purpuse of our project we realigned the count data for the transcriptomic data with the M11 mouse genome using STAR. 
+For the purpose of our project we realigned the count data for the transcriptomic data with the M11 mouse genome using STAR. 
 :::
 
 ## Row
@@ -176,6 +176,181 @@ datatable(ToD_candidates_list$`72h_vs_48h`,
 
 # GO Enrichment 
 
+## Row 
+
+### Column {.tabset title="GO Enrichments"}
+```{r}
+#| title: 0h to 1h BP
+
+enrichment_plots <- here::here("results/GO_Kegg_Enrichment_ToD_candidates", "GO_Kegg_Enrichment_ToD_candidates.rds") %>% readRDS()
+
+enrichment_plots$`1h_vs_0h_BP`
+```
+
+```{r}
+#| title: 0h to 1h CC
+
+enrichment_plots$`1h_vs_0h_CC`
+```
+
+```{r}
+#| title: 0h to 1h MF
+
+enrichment_plots$`1h_vs_0h_MF`
+```
+
+```{r}
+#| title: 1h to 6h BP
+
+enrichment_plots$`6h_vs_1h_BP`
+```
+
+```{r}
+#| title: 1h to 6h CC
+
+enrichment_plots$`6h_vs_1h_CC`
+```
+
+```{r}
+#| title: 1h to 6h MF
+
+enrichment_plots$`6h_vs_1h_MF`
+```
+
+```{r}
+#| title: 6h to 12h BP
+
+enrichment_plots$`12h_vs_6h_BP`
+```
+
+```{r}
+#| title: 6h to 12h CC
+
+enrichment_plots$`12h_vs_6h_CC`
+```
+
+```{r}
+#| title: 6h to 12h MF
+
+enrichment_plots$`12h_vs_6h_MF`
+```
+
+```{r}
+#| title: 12h to 24h BP
+
+enrichment_plots$`24h_vs_12h_BP`
+```
+
+```{r}
+#| title: 12h to 24h CC
+
+enrichment_plots$`24h_vs_12h_CC`
+```
+
+```{r}
+#| title: 12h to 24h MF
+
+enrichment_plots$`24h_vs_12h_MF`
+```
+
+```{r}
+#| title: 24h to 36h BP
+
+enrichment_plots$`36h_vs_24h_BP`
+```
+
+```{r}
+#| title: 24h to 36h CC
+
+enrichment_plots$`36h_vs_24h_CC`
+```
+
+```{r}
+#| title: 24h to 36h MF
+
+enrichment_plots$`36h_vs_24h_MF`
+```
+
+```{r}
+#| title: 36h to 48h BP
+
+enrichment_plots$`48h_vs_36h_BP`
+```
+
+```{r}
+#| title: 36h to 48h CC
+
+enrichment_plots$`48h_vs_36h_CC`
+```
+
+```{r}
+#| title: 36h to 48h MF
+
+enrichment_plots$`48h_vs_36h_MF`
+```
+
+```{r}
+#| title: 48h to 72h BP
+
+enrichment_plots$`72h_vs_48h_BP`
+```
+
+```{r}
+#| title: 48h to 72h CC
+
+enrichment_plots$`72h_vs_48h_CC`
+```
+
+```{r}
+#| title: 48h to 72h MF
+
+enrichment_plots$`72h_vs_48h_MF`
+```
+
+### Column {.tabset title="KEGG Enrichments"}
+
+```{r}
+#| title: 0h to 1h 
+
+enrichment_plots$p_1h_vs_0h_KEGG
+```
+
+```{r}
+#| title: 1h to 6h 
+
+enrichment_plots$p_6h_vs_1h_KEGG
+```
+
+```{r}
+#| title: 6h to 12h 
+
+enrichment_plots$p_12h_vs_6h_KEGG
+```
+
+```{r}
+#| title: 12h to 24h 
+
+enrichment_plots$p_24h_vs_12h_KEGG
+```
+
+```{r}
+#| title: 24h to 36h 
+
+enrichment_plots$p_36h_vs_24h_KEGG
+```
+
+```{r}
+#| title: 36h to 48h 
+
+enrichment_plots$p_48h_vs_36h_KEGG
+```
+
+```{r}
+#| title: 48h to 72h 
+
+enrichment_plots$p_72h_vs_48h_KEGG
+```
+
 # TF Analysis
 
 ```{r}
@@ -247,6 +422,8 @@ p_plotly
 
 ## Row
 
+### Column
+
 ```{r}
 #| title: RNA Binding Protein Target Motifs Enriched in ToD Candidates
 
@@ -266,7 +443,7 @@ datatable(grouped_data,
 )
 ```
 
-## Row {.tabset title="ToD candidates carrying RBP motifs"} 
+### Column {.tabset title="ToD candidates carrying RBP motifs"} 
 ```{r}
 #| title: 0h to 1h 5' UTRs
 
@@ -430,3 +607,120 @@ ToD_genes_carrying_RBP_motifs$`72h_vs_48h`$utr_3 %>%
           )
 )
 ```
+
+## Row {.tabset title="RNA Binding Proteins Background that are present in matched data (RNA and Protein)"}
+
+::: {.card title="Nono / M307"}
+The Nono protein is a multifunctional DNA- and RNA-binding protein involved in various nuclear processes:
+
+-  **Binding**: Binds both double-stranded and single-stranded DNA/RNA.
+-  **Splicing and Paraspeckles**: Involved in pre-mRNA splicing and the formation of nuclear paraspeckles, often in a complex with SFPQ.
+-  **DNA Repair**: Plays a role in DNA repair processes like non-homologous end joining (NHEJ).
+-  **Transcription Regulation**: Regulates transcription by interacting with promoters and enhancers.
+-  **Circadian Rhythm**: Modulates the circadian clock by repressing CLOCK-BMAL1 activity.
+-  **Synaptic Function**: Important for GABAergic synapse organization and synaptic RNA regulation.
+-  **Neuronal Differentiation**: Influences neuronal differentiation through epigenetic modifications.
+-  **Immune Response**: Participates in innate immune responses to DNA viruses.
+:::
+
+::: {.card title="Ncl / M245"}
+Nucleolin is a predominant nucleolar protein in growing eukaryotic cells, primarily associated with intranucleolar chromatin and pre-ribosomal particles. Its key functions include:
+
+-  **Chromatin Decondensation**: Induces chromatin decondensation by binding to histone H1.
+-  **Ribosome Assembly**: Plays a role in pre-rRNA transcription and ribosome assembly.
+-  **Transcriptional Elongation**: May be involved in the process of transcriptional elongation.
+-  **RNA Binding**: Binds RNA oligonucleotides with 5'-UUAGGG-3' repeats more tightly than telomeric single-stranded DNA with 5'-TTAGGG-3' repeats.
+:::
+
+::: {.card title="Ybx2 / M082"}
+This protein is a key component of messenger ribonucleoprotein particles (mRNPs) and plays a crucial role in the regulation of germ cell mRNA stability and translation. Its functions include:
+
+-  **mRNA Binding**: Binds full-length mRNA with high affinity in a sequence-independent manner and binds short RNA sequences with low affinity.
+-  **Y-box Interaction**: Binds to the Y-box consensus promoter element, potentially marking mRNAs for cytoplasmic storage.
+-  **Cytoplasmic Retention**: Essential for the cytoplasmic retention of maternal mRNAs.
+-  **mRNA Storage**: May link transcription and mRNA storage/translational delay by marking specific mRNAs for cytoplasmic storage.
+:::
+
+::: {.card title="Snrnp70 / M068"}
+This gene encodes a subunit of the U1 snRNP (small nuclear ribonucleic particle), one of at least five snRNPs to comprise the spliceosome, which functions in processing of pre-mRNAs. The U1 snRNP has been shown to be important in defining the 5' splice site. Alternative splicing results in multiple transcript variants
+:::
+
+::: {.card title="Hnrnph2 / M151"}
+This protein is a component of the heterogeneous nuclear ribonucleoprotein (hnRNP) complexes which provide the substrate for the processing events that pre-mRNAs undergo before becoming functional, translatable mRNAs in the cytoplasm.
+:::
+
+::: {.card title="Rbm46 / M052"}
+Enables RNA binding activity. Involved in several processes, including cell cycle switching, mitotic to meiotic cell cycle; meiotic nuclear division; and spermatid differentiation. Acts upstream of or within mRNA stabilization and trophectodermal cell differentiation. Located in cytoplasm and nucleus. Is expressed in central nervous system; craniocervical region bone; dorsal root ganglion; lung; and rib. Orthologous to human RBM46
+:::
+
+::: {.card title="Srsf3 / M056"}
+Splicing factor, which binds the consensus motif 5'-C[ACU][AU]C[ACU][AC]C-3' within pre-mRNA and promotes specific exons inclusion during alternative splicing. Interaction with YTHDC1, a RNA-binding protein that recognizes and binds N6-methyladenosine (m6A)-containing RNAs, promotes recruitment of SRSF3 to its mRNA-binding elements adjacent to m6A sites within exons. Also functions as an adapter involved in mRNA nuclear export. Binds mRNA which is thought to be transferred to the NXF1-NXT1 heterodimer for export (TAP/NXF1 pathway); enhances NXF1-NXT1 RNA-binding activity. Involved in nuclear export of m6A-containing mRNAs via interaction with YTHDC1: interaction with YTHDC1 facilitates m6A-containing mRNA-binding to both SRSF3 and NXF1, promoting mRNA nuclear export
+:::
+
+::: {.card title="Eif2s1 / M231"}
+This protein is a member of the eIF2 complex, playing a crucial role in the early steps of protein synthesis and stress response. Key functions include:
+
+-  **Protein Synthesis Initiation**: Forms a ternary complex with GTP and initiator tRNA, binding to the 40S ribosomal subunit to form the 43S pre-initiation complex, and later the 80S initiation complex after GTP hydrolysis.
+-  **GTP/GDP Exchange**: Requires GDP-GTP exchange, catalyzed by eIF2B, for recycling and initiating another round of protein synthesis.
+-  **Integrated Stress Response (ISR)**: Phosphorylation by stress-sensing kinases turns eIF2-alpha into an inhibitor of global protein synthesis, reducing cap-dependent translation while promoting translation of ISR-specific mRNAs like ATF4 and QRICH1.
+-  **Mitophagy Activation**: Acts as an activator of mitophagy in response to mitochondrial damage by relocating to the mitochondrial surface upon phosphorylation, triggering PRKN-independent mitophagy.
+:::
+
+::: {.card title="Tardbp / M074"}
+-  **DNA and RNA Binding**: Enables sequence-specific DNA binding at RNA polymerase II cis-regulatory regions and binds pre-mRNA introns.
+-  **Regulatory Roles**: Involved in positively regulating protein import into the nucleus, circadian rhythm, and protein stability.
+-  **RNA Splicing**: Acts upstream of or within RNA splicing processes.
+-  **Localization and Expression**: Located in the nucleus and expressed in various structures, including the central nervous system, heart, genitourinary system, branchial arch, and early conceptus.
+-  **Research and Disease Study**: Used in studies related to Grn-related frontotemporal lobar degeneration with TDP-43 inclusions, amyotrophic lateral sclerosis type 10, and frontotemporal dementia.
+-  **Human Orthologs**: The human ortholog, TARDBP, is implicated in Parkinson's disease, amyotrophic lateral sclerosis, and motor neuron disease.
+:::
+
+::: {.card title="Rbm4b / M109"}
+-  **RNA Binding**: Predicted to enable RNA binding activity.
+-  **Circadian Regulation**: Involved in the circadian regulation of gene expression and the entrainment of the circadian clock by photoperiod.
+-  **Translation Regulation**: Plays a role in the regulation of translation.
+-  **Gene Expression**: Acts upstream of or within the positive regulation of gene expression.
+-  **Cellular Localization**: Predicted to be located in the cytosol and nucleoplasm and active in nuclear specks.
+-  **Complex Participation**: Predicted to be part of a protein-containing complex.
+-  **Expression**: Expressed in various systems, including the alimentary, brain, cardiovascular, genitourinary, and hemolymphoid systems.
+:::
+
+::: {.card title="Raly / M150"}
+Predicted to enable RNA binding activity and identical protein binding activity. Predicted to be located in nucleoplasm. Predicted to be active in nucleus. Is expressed in brain; cortical plate; spinal cord; and trigeminal ganglion
+:::
+
+::: {.card title="Tial1 / M075"}
+-  **Alternative Splicing**: Involved in alternative pre-mRNA splicing, particularly activating splicing of exons with weak 5' splice sites followed by a U-rich stretch, including its own pre-mRNA and TIA1 mRNA.
+-  **RNA Preference**: Shows a preference for binding uridine-rich RNAs.
+-  **Exon Inclusion**: Promotes the inclusion of exon 5 in TIA1, leading to the production of the long isoform (isoform a) of TIA1.
+-  **Stress Granules Formation**: Plays a role in forming cytoplasmic stress granules, acting downstream of stress-induced EIF2S1/EIF2A phosphorylation to recruit untranslated mRNAs to these granules.
+:::
+
+::: {.card title="Cpeb4 / M149"}
+-   **RNA Binding**: Binds to the cytoplasmic polyadenylation element (CPE), a uridine-rich sequence in the mRNA 3'-UTR, causing a conformational change similar to the Venus fly trap mechanism.
+-   **ER Stress Response**: Regulates the activation of the unfolded protein response (UPR) during ER stress in the liver by maintaining the translation of CPE-regulated mRNAs when global protein synthesis is inhibited.
+-   **Cell Cycle and Cytokinesis**: Essential for cell cycle progression, particularly cytokinesis and chromosomal segregation.
+-   **Oncogenic Role**: Acts as an oncogene by promoting tumor growth and progression through the positive regulation of t-plasminogen activator/PLAT translation.
+-   **Melanocyte Proliferation**: Stimulates the proliferation of melanocytes.
+-   **Synaptic Plasticity**: Unlike CPEB1 and CPEB3, it does not play a role in synaptic plasticity, learning, and memory.
+:::
+
+::: {.card title="Rbmx / M344"}
+-  **Gene Transcription and Tumor Suppression**: Binds to and stimulates transcription from the TXNIP gene promoter, potentially playing a role in tumor suppression. When associated with SAFB, it also stimulates transcription from the SREBF1 promoter.
+-  **mRNA Association**: Associates with nascent mRNAs transcribed by RNA polymerase II and is part of the supraspliceosome complex, influencing pre-mRNA alternative splice site selection.
+-  **Alternative Splicing**: Can activate or suppress exon inclusion; works with TRA2B to promote exon 7 inclusion in SMN2 and represses the splicing of MAPT/Tau exon 10.
+-  **RNA Binding**: Binds preferentially to single-stranded 5'-CC[A/C]-rich RNA sequence motifs and likely binds RNA as a homodimer. It also binds non-specifically to pre-mRNAs.
+-  **Cytoplasmic Role**: Involved in cytoplasmic TNFR1 trafficking, promoting IL-1-beta-mediated cleavage of TNFR1 ectodomains and the release of TNFR1 in exosome-like vesicles.
+:::
+
+::: {.card title="Pcbp2 / M043"}
+-   **Binding Specificity**: Prefers binding to oligo dC and also binds poly(rC) and poly(rU).
+-   **Antiviral Signaling Regulation**: Acts as a negative regulator of antiviral signaling, specifically by:
+   -  **MAVS Signaling**: Serving as an adapter between MAVS and the E3 ubiquitin ligase ITCH, facilitating MAVS ubiquitination and degradation.
+   -  **cGAS-STING Pathway**: Interacting with CGAS to prevent the formation of liquid-like droplets necessary for CGAS activation.
+-   **Erythropoiesis**: Along with PCBP1, it is required for erythropoiesis, possibly through the regulation of mRNA splicing.
+:::
+
+::: {.card title="Prrc1 / M044"}
+Predicted to enable protein kinase A regulatory subunit binding activity. Predicted to be involved in epithelial structure maintenance. Predicted to be located in Golgi apparatus. Predicted to be active in cytoplasm. Is expressed in Meckel's cartilage; chondrocranium; and olfactory epithelium.
+:::
