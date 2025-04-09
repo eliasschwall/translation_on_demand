@@ -1,10 +1,11 @@
 ---
 title: "Translation on Demand"
-format: dashboard
+format: 
+  dashboard:
+    scrolling: true
 logo: "CECAD-Logo-24-white.png"
 theme: minty
 embed-resources: true
-scrollable: true
 nav-buttons:
       - icon: github
         href: https://github.com/eliasschwall/translation_on_demand
@@ -67,9 +68,10 @@ transcriptomic_yang_data %>%
 
 # ToD Filtering 
 
-## Row {.tabset title="ToD candidate genes"}
+## Row {.tabset title="ToD candidate genes" height=100%}
 ```{r}
 #| title: 0h to 1h
+
 ToD_candidates_list <- readRDS(here::here("data/processed", "ToD_candidates_list.rds"))
 
 datatable(ToD_candidates_list$`1h_vs_0h`, 
@@ -398,7 +400,7 @@ data_long <- merged_matched_TFs %>%
 p <- ggplot(data_long, aes(x = timepoint, y = value, group = gene, color = gene)) +
   geom_line() +
   geom_point() +
-  labs(y = "Prot-RNA-LFC-Ratio") +
+  labs(y = "Prot-RNA-LFC-Ratio", x="") +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
   annotate("text", x = 7.5, y = 1.5, label = "ToDC", color = "red")+
 theme_minimal() +
@@ -724,3 +726,74 @@ Predicted to enable RNA binding activity and identical protein binding activity.
 ::: {.card title="Prrc1 / M044"}
 Predicted to enable protein kinase A regulatory subunit binding activity. Predicted to be involved in epithelial structure maintenance. Predicted to be located in Golgi apparatus. Predicted to be active in cytoplasm. Is expressed in Meckel's cartilage; chondrocranium; and olfactory epithelium.
 :::
+
+# UTR Metrics
+
+## Row 
+
+```{r}
+#| include: false
+background_utrs <- here("data/reference", "background_utrs.rds") %>% readRDS()
+ToD_utrs_list <- here("data/reference", "ToDC_all_utrs.rds") %>% readRDS() 
+
+ToD_utr_5_list <- lapply(ToD_utrs_list, function(x) x$utr_5)
+ToD_utr_5 <- do.call(rbind, ToD_utr_5_list)
+
+ToD_utr_3_list <- lapply(ToD_utrs_list, function(x) x$utr_3)
+ToD_utr_3 <- do.call(rbind, ToD_utr_3_list)
+```
+
+
+```{r}
+#| title: Nucleotide Content in 5' UTRs of ToD candidates vs all 5' UTRs
+# Reshape the data for plotting and set factor levels for the first dataset
+long_data1 <- ToD_utr_5 %>%
+  select(A_count_percentage, C_count_percentage, G_count_percentage, T_count_percentage, GC_content_percentage) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
+  mutate(variable = factor(variable, levels = c("A_count_percentage", "C_count_percentage", "G_count_percentage", "T_count_percentage", "GC_content_percentage")))
+
+# Reshape the data for plotting and set factor levels for the second dataset
+long_data2 <- background_utrs$utr_5 %>%
+  select(A_count_percentage, C_count_percentage, G_count_percentage, T_count_percentage, GC_content_percentage) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
+  mutate(variable = factor(variable, levels = c("A_count_percentage", "C_count_percentage", "G_count_percentage", "T_count_percentage", "GC_content_percentage")))
+
+# Create the overlayed boxplot
+ggplot() +
+  # First boxplot with transparency
+  geom_boxplot(data = long_data1, aes(x = variable, y = value, fill = variable)) +
+  # Second boxplot on top
+  geom_boxplot(data = long_data2, aes(x = variable, y = value, color= "red"), alpha = 0.03) +
+  theme_minimal() +
+  stat_summary(data = long_data1, fun = mean, geom = "text", aes(x = variable, y = value, label = sprintf("%.2f", ..y..)), vjust = -0.5, color = "black") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "right") +
+  labs(y = "Percentage", x = "",fill = "Nucleotide Content", color = "all 5' UTRs") +
+  ggsci::scale_color_nejm() 
+```
+
+```{r}
+#| title: Nucleotide Content in 3' UTRs of ToD candidates vs all 3' UTRs
+# Reshape the data for plotting and set factor levels for the first dataset
+long_data1 <- ToD_utr_3 %>%
+  select(A_count_percentage, C_count_percentage, G_count_percentage, T_count_percentage, GC_content_percentage) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
+  mutate(variable = factor(variable, levels = c("A_count_percentage", "C_count_percentage", "G_count_percentage", "T_count_percentage", "GC_content_percentage")))
+
+# Reshape the data for plotting and set factor levels for the second dataset
+long_data2 <- background_utrs$utr_3 %>%
+  select(A_count_percentage, C_count_percentage, G_count_percentage, T_count_percentage, GC_content_percentage) %>%
+  pivot_longer(cols = everything(), names_to = "variable", values_to = "value") %>%
+  mutate(variable = factor(variable, levels = c("A_count_percentage", "C_count_percentage", "G_count_percentage", "T_count_percentage", "GC_content_percentage")))
+
+# Create the overlayed boxplot
+ggplot() +
+  # First boxplot with transparency
+  geom_boxplot(data = long_data1, aes(x = variable, y = value, fill = variable)) +
+  # Second boxplot on top
+  geom_boxplot(data = long_data2, aes(x = variable, y = value, color= "red"), alpha = 0.03) +
+  theme_minimal() +
+  stat_summary(data = long_data1, fun = mean, geom = "text", aes(x = variable, y = value, label = sprintf("%.2f", ..y..)), vjust = -0.5, color = "black") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "right") +
+  labs(y = "Percentage", x = "",fill = "Nucleotide Content", color = "all 3' UTRs") +
+  ggsci::scale_color_nejm() 
+```

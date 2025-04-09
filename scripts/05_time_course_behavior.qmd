@@ -3,3 +3,12 @@ title: "Untitled"
 format: html
 ---
 
+
+```{r}
+proteomic_data <- here("data/processed/yang_paper/","yang_proteomics.rds") %>% readRDS()
+dds <- here("data/processed/","dds.rds") %>% readRDS()
+
+transcriptomic_data <- DESeq2::counts(dds, normalized = TRUE) %>% 
+    cbind(., rowData(dds)$mgi_symbol) %>% 
+    # mutating to avarage the replicates
+```

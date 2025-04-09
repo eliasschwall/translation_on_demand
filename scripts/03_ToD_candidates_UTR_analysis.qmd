@@ -8,6 +8,8 @@ ToD_candidates_list <- here("data/processed", "ToD_candidates_list.rds") %>% rea
 ```
 
 ```{r UTRs}
+#| label: fatching the UTR data from biomart 
+
 mart <- biomaRt::useEnsembl(biomart = "genes", dataset = "mmusculus_gene_ensembl")
 
 ToDC_all_utrs <- lapply(names(ToD_candidates_list), function(time_point) {
@@ -18,6 +20,15 @@ ToDC_all_utrs <- lapply(names(ToD_candidates_list), function(time_point) {
 names(ToDC_all_utrs) <- names(ToD_candidates_list)
 
 saveRDS(ToDC_all_utrs, here("data/reference", "ToDC_all_utrs.rds"))
+
+# now also for all genes in the matched data
+background_utrs <- here("data/processed/", "background_genes.rds") %>% 
+  readRDS() %>% 
+  as.data.frame() %>% 
+  setNames(c("mgi_symbol")) %>% 
+  get_utrs()
+
+saveRDS(background_utrs, here("data/reference", "background_utrs.rds"))
 ```
 
 ```{r Analysing UTRs}

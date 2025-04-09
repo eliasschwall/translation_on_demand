@@ -3,7 +3,7 @@
 ```{r Setup}
 transcriptomic_yang_data <- here::here("data/raw/yang_paper", "transcriptomic_counts.csv") |> read.csv()
 proteomic_yang_data <- here::here("data/processed/yang_paper", "yang_proteomics.rds") |> readRDS()
-ToD_candidates_list <- here::here("data/processed", "ToD_candidates_list.rds") |> readRDS()
+ToD_candidates_list <- here::here("data/processed", "ToD_candidates_list_looser_th.rds") |> readRDS()
 ```
 
 ```{r GO ANALYSIS}
@@ -14,6 +14,16 @@ library(tidyverse)
 library(clusterProfiler)
 library(org.Mm.eg.db)
 library(enrichplot)
+library(here)
+
+# ------------------------------
+# Create figures directory if it doesn't exist
+# ------------------------------
+figures_dir <- here::here("figures")
+if (!dir.exists(figures_dir)) {
+  dir.create(figures_dir, recursive = TRUE)
+  cat("Created figures directory:", figures_dir, "\n")
+}
 
 # ------------------------------
 # Step 0: Define the Background Gene List
@@ -51,61 +61,82 @@ contrast_mapping <- c(
   "72h_vs_48h" = "log2FC_48h_72h"
 )
 
+# Initialize a list to store all plots
 plots <- list()
-  for (comp in comparison_names) {
-    
-    if (!comp %in% names(ToD_candidates_list)) {
-      cat("Comparison", comp, "not found in ToD_candidates_list.\n")
-      next
-    }
-    
-    # Extract candidate gene symbols for the current comparison.
-    candidate_genes <- unique(ToD_candidates_list[[comp]]$mgi_symbol)
-    
-    if (length(candidate_genes) == 0) {
-      cat("No candidate genes found for", comp, "\n")
-      next
-    }
-    
-    # Convert candidate gene symbols to Entrez IDs.
-    cand_entrez <- bitr(candidate_genes, fromType = "SYMBOL", 
-                        toType = "ENTREZID", OrgDb = org.Mm.eg.db)
-    
-    cat("-------------------------------------------------\n")
-    cat("Comparison:", comp, "\n")
-    cat("Number of candidate genes:", length(candidate_genes), "\n")
-    cat("Candidate genes (converted):", nrow(cand_entrez), "\n\n")
-    
-    # For each ontology, run GO enrichment and create a dot plot.
-    for (ont in ontologies) {
-      ego <- enrichGO(gene         = cand_entrez$ENTREZID,
-                      universe     = bg_entrez$ENTREZID,
-                      OrgDb        = org.Mm.eg.db,
-                      ont          = ont,
-                      pAdjustMethod = "BH",
-                      pvalueCutoff = 1,    # lenient thresholds for exploration
-                      qvalueCutoff = 1,
-                      readable     = TRUE)
-      
-      # Create the dot plot.
-      if(nrow(as.data.frame(ego)) > 0) {
-        p <- dotplot(ego, showCategory = 10) +
-            ggtitle(paste("GO Enrichment -", ont, "(", comp, ")"))
-      } else {
-        p <- ggplot() +
-            geom_blank() +
-            ggtitle(paste("No enriched GO terms for", ont, "(", comp, ")"))
-      }
-      
-      # Store the plot in the plots list with a descriptive name.
-      plots[[paste0(comp, "_", ont)]] <- p
-    }
-    
-    cat("GO enrichment analysis completed for comparison:", comp, "\n\n")
-  }
 
-for(plot_name in names(plots)){
-  plots[[plot_name]]
+for (comp in comparison_names) {
+  
+  if (!comp %in% names(ToD_candidates_list)) {
+    cat("Comparison", comp, "not found in ToD_candidates_list.\n")
+    next
+  }
+  
+  # Extract candidate gene symbols for the current comparison.
+  candidate_genes <- unique(ToD_candidates_list[[comp]]$mgi_symbol)
+  
+  if (length(candidate_genes) == 0) {
+    cat("No candidate genes found for", comp, "\n")
+    next
+  }
+  
+  # Convert candidate gene symbols to Entrez IDs.
+  cand_entrez <- bitr(candidate_genes, fromType = "SYMBOL", 
+                     toType = "ENTREZID", OrgDb = org.Mm.eg.db)
+  
+  cat("-------------------------------------------------\n")
+  cat("Comparison:", comp, "\n")
+  cat("Number of candidate genes:", length(candidate_genes), "\n")
+  cat("Candidate genes (converted):", nrow(cand_entrez), "\n\n")
+  
+  # For each ontology, run GO enrichment and create a dot plot.
+  for (ont in ontologies) {
+    ego <- enrichGO(gene         = cand_entrez$ENTREZID,
+                    universe     = bg_entrez$ENTREZID,
+                    OrgDb        = org.Mm.eg.db,
+                    ont          = ont,
+                    pAdjustMethod = "BH",
+                    pvalueCutoff = 0.1,    # lenient thresholds for exploration
+                    qvalueCutoff = 0.1,
+                    readable     = TRUE)
+    
+    # Create the dot plot.
+    if(nrow(as.data.frame(ego)) > 0) {
+      p <- dotplot(ego, showCategory = 10) +
+          ggtitle(paste("GO Enrichment -", ont, "(", comp, ")"))
+    } else {
+      p <- ggplot() +
+          geom_blank() +
+          ggtitle(paste("No enriched GO terms for", ont, "(", comp, ")"))
+    }
+    
+    # Store the plot in the plots list with a descriptive name.
+    plot_name <- paste0(comp, "_", ont)
+    plots[[plot_name]] <- p
+    
+    cat("Created plot:", plot_name, "\n")
+  }
+  
+  cat("GO enrichment analysis completed for comparison:", comp, "\n\n")
+}
+
+# Save all plots to a single PDF file
+pdf_filename <- file.path(figures_dir, "GO_enrichment_all_timepoints.pdf")
+pdf(pdf_filename, width = 10, height = 8)
+
+# Print all plots to the PDF
+for(plot_name in names(plots)) {
+  cat("Adding plot to PDF:", plot_name, "\n")
+  print(plots[[plot_name]])
+}
+
+# Close the PDF device
+dev.off()
+cat("Saved all plots to:", pdf_filename, "\n")
+
+# Display all plots in R environment if needed
+for(plot_name in names(plots)) {
+  cat("Displaying plot:", plot_name, "\n")
+  print(plots[[plot_name]])
 }
 ```
 
