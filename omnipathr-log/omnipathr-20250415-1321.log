@@ -1,0 +1,322 @@
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Initialized cache: `/data/user/eschwall/.cache/OmnipathR`.
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Package `OmnipathR` packaged: 2025-04-15 11:15:21 UTC; eschwall
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Package `OmnipathR` date/publication: NA
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Package `OmnipathR` built: R 4.3.2; ; 2025-04-15 11:15:21 UTC; unix
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Package `OmnipathR` version: 3.15.14
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Package `OmnipathR` repository: NA
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Session info: [version=R version 4.3.2 (2023-10-31); os=Ubuntu 22.04.3 LTS; system=x86_64, linux-gnu; ui=X11; language=(EN); collate=en_US.UTF-8; ctype=en_US.UTF-8; tz=Europe/Berlin; date=2025-04-15; pandoc=NA (via rmarkdown); quarto=1.5.57 @ /opt/quarto-1.5.57/bin/quarto]
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] External libraries: [cairo=1.16.0; cairoFT=; pango=1.50.6; png=1.6.37; jpeg=8.0; tiff=LIBTIFF, Version 4.3.0; tcl=8.6.12; curl=7.81.0; zlib=1.2.11; bzlib=1.0.8, 13-Jul-2019; xz=5.2.5; PCRE=10.39 2021-10-29; ICU=70.1; TRE=TRE 0.8.0 R_fixes (BSD); iconv=glibc 2.35; readline=8.1; BLAS=/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0; lapack=/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0; lapack_version=3.10.0]
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Loaded packages: backports 1.5.0(2024-05-23); BiocParallel 1.36.0(2023-10-24); bit 4.6.0(2025-03-06); bit64 4.6.0-1(2025-01-16); blob 1.2.4(2023-03-17); cachem 1.1.0(2024-05-16); cellranger 1.1.0(2016-07-27); checkmate 2.3.2(2024-07-29); cli 3.6.4(2025-02-13); codetools 0.2-20(2024-03-31); crayon 1.5.3(2024-06-20); curl 6.2.2(2025-03-24); DBI 1.2.3(2024-06-02); decoupleR 2.9.7(2025-04-15); digest 0.6.37(2024-08-19); dplyr 1.1.4(2023-11-17); evaluate 1.0.3(2025-01-10); fastmap 1.2.0(2024-05-15); fs 1.6.6(2025-04-12); generics 0.1.3(2022-07-05); glue 1.8.0(2024-09-30); hms 1.1.3(2023-03-21); htmltools 0.5.8.1(2024-04-04); httr 1.4.7(2023-08-15); httr2 1.1.2(2025-03-26); igraph 2.1.4(2025-01-23); jsonlite 2.0.0(2025-03-27); knitr 1.50(2025-03-16); later 1.4.2(2025-04-08); lattice 0.22-6(2024-03-20); lifecycle 1.0.4(2023-11-07); logger 0.4.0(2024-10-22); lubridate 1.9.4(2024-12-08); magrittr 2.0.3(2022-03-30); Matrix 1.6-3(2023-11-14); memoise 2.0.1(2021-11-26); OmnipathR 3.15.14(2025-04-15); parallelly 1.43.0(2025-03-24); pillar 1.10.2(2025-04-05); pkgconfig 2.0.3(2019-09-22); prettyunits 1.2.0(2023-09-24); progress 1.2.3(2023-12-06); purrr 1.0.4(2025-02-05); R.methodsS3 1.8.2(2022-06-13); R.oo 1.27.0(2024-11-01); R.utils 2.13.0(2025-02-24); R6 2.6.1(2025-02-15); rappdirs 0.3.3(2021-01-31); Rcpp 1.0.14(2025-01-12); readr 2.1.5(2024-01-10); readxl 1.4.5(2025-03-07); rlang 1.1.6(2025-04-11); rmarkdown 2.29(2024-11-04); RSQLite 2.3.9(2024-12-03); rvest 1.0.4(2024-02-12); sessioninfo 1.2.3(2025-02-05); stringi 1.8.7(2025-03-27); stringr 1.5.1(2023-11-14); tibble 3.2.1(2023-03-20); tidyr 1.3.1(2024-01-24); tidyselect 1.2.1(2024-03-11); timechange 0.3.0(2024-01-18); tzdb 0.5.0(2025-03-15); vctrs 0.6.5(2023-12-01); withr 3.0.2(2024-10-28); xfun 0.52(2025-04-02); XML 3.99-0.18(2025-01-01); xml2 1.3.8(2025-03-14); yaml 2.3.10(2024-07-26); zip 2.3.2(2025-02-01)
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] CURL: version: 7.81.0; headers: 7.81.0; ssl_version: OpenSSL/3.0.2; libz_version: 1.2.11; libssh_version: libssh/0.9.6/openssl/zlib; libidn_version: 2.3.2; host: x86_64-pc-linux-gnu; protocols: dict, file, ftp, ftps, gopher, gophers, http, https, imap, imaps, ldap, ldaps, mqtt, pop3, pop3s, rtmp, rtsp, scp, sftp, smb, smbs, smtp, smtps, telnet, tftp; ipv6: TRUE; http2: TRUE; idn: TRUE; url_parser: TRUE
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/db/db_def.json` (encoding: UTF-8).
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/magic_bytes.json` (encoding: UTF-8).
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/urls.json` (encoding: UTF-8).
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/id_types.json` (encoding: UTF-8).
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Loading database `Ensembl and OMA organism names`.
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Looking up in cache `https://www.ensembl.org/info/about/species.html`: key=7332486db7400730697234bad76ca0c8e4d00799, latest version=1.
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Cache file path: /data/user/eschwall/.cache/OmnipathR/7332486db7400730697234bad76ca0c8e4d00799-1.html
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Downloading by `generic_downloader`.
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Loaded database `Ensembl and OMA organism names`.
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Processing args for OmniPath query
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Arguments for OmniPath query: [dorothea_levels=[A,B,C,D],genesymbols=TRUE,organisms=10090,query_type=interactions,datasets=dorothea]
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Organism(s): 10090
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Orthology targets: 
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:21:14] [INFO]    [OmnipathR] Cache record does not exist: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:21:14] [TRACE]   [OmnipathR] Looking up in cache: `http://no-tls.omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:21:15] [INFO]    [OmnipathR] Cache record does not exist: `http://no-tls.omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:21:15] [TRACE]   [OmnipathR] Attempting `https://omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:21:15] [INFO]    [OmnipathR] Retrieving URL: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:21:15] [TRACE]   [OmnipathR] Attempt 1/3: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:21:15] [TRACE]   [OmnipathR] HTTP request by `omnipath_curl`.
+[2025-04-15 13:21:15] [TRACE]   [OmnipathR] The following curl options are not available: tcp_keepcnt
+[2025-04-15 13:21:15] [TRACE]   [OmnipathR] Curl options: [connecttimeout=10,timeout=300,debugfunction=<function>,verbose=FALSE,tcp_keepalive=TRUE,tcp_keepintvl=10,tcp_keepidle=10,upkeep_interval_ms=30000,ssl_verifypeer=1,ssl_verifyhost=2]
+[2025-04-15 13:21:35] [TRACE]   [OmnipathR] HTTP v1 GET: status 200.
+[2025-04-15 13:21:35] [TRACE]   [OmnipathR] Downloaded 15.7 Kb in 20.263845s from omnipathdb.org (791 bytes/s); Redirect: 0s, DNS look up: 0.043188s, Connection: 0.063656s, Pretransfer: 0.144317s, First byte at: 20.262719s
+[2025-04-15 13:21:35] [TRACE]   [OmnipathR] HTTP headers: HTTP/1.1 200 OK; Server: nginx; Date: Tue, 15 Apr 2025 11:21:35 GMT; Content-Type: text/plain; charset=utf-8; Transfer-Encoding: chunked; Connection: keep-alive; Cache-Control: max-age=3600; Access-Control-Allow-Origin: *; Expires: Tue, 15 Apr 2025 12:21:35 GMT; Cache-Control: public; X-Frame-Options: DENY; Content-Encoding: gzip
+[2025-04-15 13:21:35] [INFO]    [OmnipathR] Successfully retrieved: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:21:35] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 13:21:35] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:35] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 13:21:35] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:35] [INFO]    [OmnipathR] Cache item `ff347dedf78ef5e38c9c6d8eed291fa901aa3791` version 1: status changed from `unknown` to `started`.
+[2025-04-15 13:21:35] [TRACE]   [OmnipathR] Exporting object to RDS: `/data/user/eschwall/.cache/OmnipathR/ff347dedf78ef5e38c9c6d8eed291fa901aa3791-1.rds`.
+[2025-04-15 13:21:36] [TRACE]   [OmnipathR] Exported RDS to `/data/user/eschwall/.cache/OmnipathR/ff347dedf78ef5e38c9c6d8eed291fa901aa3791-1.rds`.
+[2025-04-15 13:21:36] [INFO]    [OmnipathR] Download ready [key=ff347dedf78ef5e38c9c6d8eed291fa901aa3791, version=1]
+[2025-04-15 13:21:36] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 13:21:36] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:36] [INFO]    [OmnipathR] Cache item `ff347dedf78ef5e38c9c6d8eed291fa901aa3791` version 1: status changed from `started` to `ready`.
+[2025-04-15 13:21:38] [SUCCESS] [OmnipathR] Downloaded 234298 interactions.
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Initialized cache: `/data/user/eschwall/.cache/OmnipathR`.
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Package `OmnipathR` packaged: 2025-04-15 11:15:21 UTC; eschwall
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Package `OmnipathR` date/publication: NA
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Package `OmnipathR` built: R 4.3.2; ; 2025-04-15 11:15:21 UTC; unix
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Package `OmnipathR` version: 3.15.14
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Package `OmnipathR` repository: NA
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Session info: [version=R version 4.3.2 (2023-10-31); os=Ubuntu 22.04.3 LTS; system=x86_64, linux-gnu; ui=X11; language=(EN); collate=en_US.UTF-8; ctype=en_US.UTF-8; tz=Europe/Berlin; date=2025-04-15; pandoc=NA (via rmarkdown); quarto=1.5.57 @ /opt/quarto-1.5.57/bin/quarto]
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] External libraries: [cairo=1.16.0; cairoFT=; pango=1.50.6; png=1.6.37; jpeg=8.0; tiff=LIBTIFF, Version 4.3.0; tcl=8.6.12; curl=7.81.0; zlib=1.2.11; bzlib=1.0.8, 13-Jul-2019; xz=5.2.5; PCRE=10.39 2021-10-29; ICU=70.1; TRE=TRE 0.8.0 R_fixes (BSD); iconv=glibc 2.35; readline=8.1; BLAS=/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.10.0; lapack=/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.10.0; lapack_version=3.10.0]
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Loaded packages: backports 1.5.0(2024-05-23); BiocParallel 1.36.0(2023-10-24); bit 4.6.0(2025-03-06); bit64 4.6.0-1(2025-01-16); blob 1.2.4(2023-03-17); cachem 1.1.0(2024-05-16); cellranger 1.1.0(2016-07-27); checkmate 2.3.2(2024-07-29); cli 3.6.4(2025-02-13); codetools 0.2-20(2024-03-31); crayon 1.5.3(2024-06-20); curl 6.2.2(2025-03-24); DBI 1.2.3(2024-06-02); decoupleR 2.9.7(2025-04-15); digest 0.6.37(2024-08-19); dplyr 1.1.4(2023-11-17); evaluate 1.0.3(2025-01-10); fastmap 1.2.0(2024-05-15); fs 1.6.6(2025-04-12); generics 0.1.3(2022-07-05); glue 1.8.0(2024-09-30); hms 1.1.3(2023-03-21); htmltools 0.5.8.1(2024-04-04); httr 1.4.7(2023-08-15); httr2 1.1.2(2025-03-26); igraph 2.1.4(2025-01-23); jsonlite 2.0.0(2025-03-27); knitr 1.50(2025-03-16); later 1.4.2(2025-04-08); lattice 0.22-6(2024-03-20); lifecycle 1.0.4(2023-11-07); logger 0.4.0(2024-10-22); lubridate 1.9.4(2024-12-08); magrittr 2.0.3(2022-03-30); Matrix 1.6-3(2023-11-14); memoise 2.0.1(2021-11-26); OmnipathR 3.15.14(2025-04-15); parallelly 1.43.0(2025-03-24); pillar 1.10.2(2025-04-05); pkgconfig 2.0.3(2019-09-22); prettyunits 1.2.0(2023-09-24); progress 1.2.3(2023-12-06); purrr 1.0.4(2025-02-05); R.methodsS3 1.8.2(2022-06-13); R.oo 1.27.0(2024-11-01); R.utils 2.13.0(2025-02-24); R6 2.6.1(2025-02-15); rappdirs 0.3.3(2021-01-31); Rcpp 1.0.14(2025-01-12); readr 2.1.5(2024-01-10); readxl 1.4.5(2025-03-07); rlang 1.1.6(2025-04-11); rmarkdown 2.29(2024-11-04); RSQLite 2.3.9(2024-12-03); rvest 1.0.4(2024-02-12); sessioninfo 1.2.3(2025-02-05); stringi 1.8.7(2025-03-27); stringr 1.5.1(2023-11-14); tibble 3.2.1(2023-03-20); tidyr 1.3.1(2024-01-24); tidyselect 1.2.1(2024-03-11); timechange 0.3.0(2024-01-18); tzdb 0.5.0(2025-03-15); vctrs 0.6.5(2023-12-01); withr 3.0.2(2024-10-28); xfun 0.52(2025-04-02); XML 3.99-0.18(2025-01-01); xml2 1.3.8(2025-03-14); yaml 2.3.10(2024-07-26); zip 2.3.2(2025-02-01)
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] CURL: version: 7.81.0; headers: 7.81.0; ssl_version: OpenSSL/3.0.2; libz_version: 1.2.11; libssh_version: libssh/0.9.6/openssl/zlib; libidn_version: 2.3.2; host: x86_64-pc-linux-gnu; protocols: dict, file, ftp, ftps, gopher, gophers, http, https, imap, imaps, ldap, ldaps, mqtt, pop3, pop3s, rtmp, rtsp, scp, sftp, smb, smbs, smtp, smtps, telnet, tftp; ipv6: TRUE; http2: TRUE; idn: TRUE; url_parser: TRUE
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/db/db_def.json` (encoding: UTF-8).
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/magic_bytes.json` (encoding: UTF-8).
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/urls.json` (encoding: UTF-8).
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/id_types.json` (encoding: UTF-8).
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Loading database `Ensembl and OMA organism names`.
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Looking up in cache `https://www.ensembl.org/info/about/species.html`: key=7332486db7400730697234bad76ca0c8e4d00799, latest version=1.
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Cache file path: /data/user/eschwall/.cache/OmnipathR/7332486db7400730697234bad76ca0c8e4d00799-1.html
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Downloading by `generic_downloader`.
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2025-04-15 13:21:59] [INFO]    [OmnipathR] Loaded database `Ensembl and OMA organism names`.
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Processing args for OmniPath query
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Arguments for OmniPath query: [dorothea_levels=[A,B,C,D],genesymbols=TRUE,organisms=10090,query_type=interactions,datasets=dorothea]
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Organism(s): 10090
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Orthology targets: 
+[2025-04-15 13:21:59] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:22:00] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/ff347dedf78ef5e38c9c6d8eed291fa901aa3791-1.rds`.
+[2025-04-15 13:22:00] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:22:02] [SUCCESS] [OmnipathR] Loaded 234298 interactions from cache.
+[2025-04-15 13:37:34] [TRACE]   [OmnipathR] Processing args for OmniPath query
+[2025-04-15 13:37:34] [TRACE]   [OmnipathR] Arguments for OmniPath query: [dorothea_levels=[A,B,C,D],genesymbols=TRUE,organisms=10090,query_type=interactions,datasets=dorothea]
+[2025-04-15 13:37:34] [TRACE]   [OmnipathR] Organism(s): 10090
+[2025-04-15 13:37:34] [TRACE]   [OmnipathR] Orthology targets: 
+[2025-04-15 13:37:34] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:37:35] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/ff347dedf78ef5e38c9c6d8eed291fa901aa3791-1.rds`.
+[2025-04-15 13:37:35] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=dorothea&organisms=10090&dorothea_levels=A,B,C,D&fields=sources,references,curation_effort,dorothea_level&license=academic`
+[2025-04-15 13:37:37] [SUCCESS] [OmnipathR] Loaded 234298 interactions from cache.
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Processing args for OmniPath query
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Arguments for OmniPath query: [wide=TRUE,resources=PROGENy,query_type=annotations]
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Organism(s): 9606
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Orthology targets: 
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 13:46:43] [INFO]    [OmnipathR] Cache record does not exist: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Looking up in cache: `http://no-tls.omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 13:46:43] [INFO]    [OmnipathR] Cache record does not exist: `http://no-tls.omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Attempting `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 13:46:43] [INFO]    [OmnipathR] Retrieving URL: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Attempt 1/3: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] HTTP request by `omnipath_curl`.
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] The following curl options are not available: tcp_keepcnt
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Curl options: [connecttimeout=10,timeout=300,debugfunction=<function>,verbose=FALSE,tcp_keepalive=TRUE,tcp_keepintvl=10,tcp_keepidle=10,upkeep_interval_ms=30000,ssl_verifypeer=1,ssl_verifyhost=2]
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] HTTP v1 GET: status 200.
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] Downloaded 15.7 Kb in 0.130599s from omnipathdb.org (120 Kb/s); Redirect: 0s, DNS look up: 0.000789s, Connection: 0.018773s, Pretransfer: 0.09255s, First byte at: 0.129957s
+[2025-04-15 13:46:43] [TRACE]   [OmnipathR] HTTP headers: HTTP/1.1 200 OK; Server: nginx; Date: Tue, 15 Apr 2025 11:46:43 GMT; Content-Type: text/plain; charset=utf-8; Transfer-Encoding: chunked; Connection: keep-alive; Cache-Control: max-age=3600; Access-Control-Allow-Origin: *; Expires: Tue, 15 Apr 2025 12:46:43 GMT; Cache-Control: public; X-Frame-Options: DENY; Content-Encoding: gzip
+[2025-04-15 13:46:45] [INFO]    [OmnipathR] Successfully retrieved: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 13:46:45] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 13:46:45] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:46:45] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 13:46:45] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:46:45] [INFO]    [OmnipathR] Cache item `3492392585ba05414edfae46801492076437d7e7` version 1: status changed from `unknown` to `started`.
+[2025-04-15 13:46:45] [TRACE]   [OmnipathR] Exporting object to RDS: `/data/user/eschwall/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-04-15 13:46:45] [TRACE]   [OmnipathR] Exported RDS to `/data/user/eschwall/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-04-15 13:46:45] [INFO]    [OmnipathR] Download ready [key=3492392585ba05414edfae46801492076437d7e7, version=1]
+[2025-04-15 13:46:45] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 13:46:45] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:46:46] [INFO]    [OmnipathR] Cache item `3492392585ba05414edfae46801492076437d7e7` version 1: status changed from `started` to `ready`.
+[2025-04-15 13:46:46] [SUCCESS] [OmnipathR] Downloaded 700239 annotation records.
+[2025-04-15 13:46:55] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-04-15 13:46:55] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:46:55] [TRACE]   [OmnipathR] Processing args for OmniPath query
+[2025-04-15 13:46:55] [TRACE]   [OmnipathR] Arguments for OmniPath query: [wide=TRUE,resources=PROGENy,query_type=annotations]
+[2025-04-15 13:46:55] [TRACE]   [OmnipathR] Organism(s): 9606
+[2025-04-15 13:46:55] [TRACE]   [OmnipathR] Orthology targets: 
+[2025-04-15 13:46:55] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-04-15 13:46:55] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 13:46:55] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 13:46:56] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-04-15 13:46:56] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 13:46:56] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-04-15 15:15:58] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-04-15 15:15:58] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:15:58] [TRACE]   [OmnipathR] Processing args for OmniPath query
+[2025-04-15 15:15:58] [TRACE]   [OmnipathR] Arguments for OmniPath query: [wide=TRUE,resources=PROGENy,query_type=annotations]
+[2025-04-15 15:15:58] [TRACE]   [OmnipathR] Organism(s): 9606
+[2025-04-15 15:15:58] [TRACE]   [OmnipathR] Orthology targets: 
+[2025-04-15 15:15:58] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-04-15 15:15:58] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:15:58] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 15:15:58] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-04-15 15:15:58] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 15:15:58] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-04-15 15:16:04] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-04-15 15:16:04] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:16:04] [TRACE]   [OmnipathR] Processing args for OmniPath query
+[2025-04-15 15:16:04] [TRACE]   [OmnipathR] Arguments for OmniPath query: [wide=TRUE,resources=PROGENy,query_type=annotations]
+[2025-04-15 15:16:04] [TRACE]   [OmnipathR] Organism(s): 9606
+[2025-04-15 15:16:04] [TRACE]   [OmnipathR] Orthology targets: 
+[2025-04-15 15:16:04] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-04-15 15:16:04] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:16:04] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 15:16:04] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-04-15 15:16:04] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 15:16:04] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-04-15 15:16:05] [INFO]    [OmnipathR] Loading database `Orthologous Matrix (OMA) gene pairs`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Downloading by `generic_downloader`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Downloading by `generic_downloader`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Downloading by `generic_downloader`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/api/pairs/HUMAN/MOUSE/?format=tsv&xrefs=UniProtKB%2FSwissProt&per_page=2000000`.
+[2025-04-15 15:16:05] [INFO]    [OmnipathR] Cache record does not exist: `https://omabrowser.org/api/pairs/HUMAN/MOUSE/?format=tsv&xrefs=UniProtKB%2FSwissProt&per_page=2000000`
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Could not find in cache, initiating download: `https://omabrowser.org/api/pairs/HUMAN/MOUSE/?format=tsv&xrefs=UniProtKB%2FSwissProt&per_page=2000000`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:16:05] [INFO]    [OmnipathR] Cache item `8f45b25c384d814c7de210e7ca40b7e35894e4f1` version 1: status changed from `unknown` to `started`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Exporting object to RDS: `/data/user/eschwall/.cache/OmnipathR/8f45b25c384d814c7de210e7ca40b7e35894e4f1-1.rds`.
+[2025-04-15 15:16:05] [INFO]    [OmnipathR] Retrieving URL: `https://omabrowser.org/api/pairs/HUMAN/MOUSE/?format=tsv&xrefs=UniProtKB%2FSwissProt&per_page=2000000`
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Attempt 1/3: `https://omabrowser.org/api/pairs/HUMAN/MOUSE/?format=tsv&xrefs=UniProtKB%2FSwissProt&per_page=2000000`
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] HTTP request by `omnipath_curl`.
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] The following curl options are not available: tcp_keepcnt
+[2025-04-15 15:16:05] [TRACE]   [OmnipathR] Curl options: [connecttimeout=10,timeout=300,debugfunction=<function>,verbose=FALSE,tcp_keepalive=TRUE,tcp_keepintvl=10,tcp_keepidle=10,upkeep_interval_ms=30000,ssl_verifypeer=1,ssl_verifyhost=2]
+[2025-04-15 15:16:30] [TRACE]   [OmnipathR] HTTP v2 GET: status 200.
+[2025-04-15 15:16:30] [TRACE]   [OmnipathR] Downloaded 5 Kb in 25.269505s from omabrowser.org (204 bytes/s); Redirect: 0s, DNS look up: 0.023736s, Connection: 0.036978s, Pretransfer: 0.109876s, First byte at: 25.269281s
+[2025-04-15 15:16:30] [TRACE]   [OmnipathR] HTTP headers: HTTP/2 200 ; date: Tue, 15 Apr 2025 13:16:30 GMT; server: nginx; strict-transport-security: max-age=31536000; includeSubDomains; content-type: text/tsv; charset=utf-8; content-length: 1187278; x-total-count: 22374; vary: Accept,Origin,Cookie; allow: GET, HEAD, OPTIONS; content-disposition: attachment; filename=OMA-Pairs_HUMAN-MOUSE_2025-04-15_131628.tsv; x-frame-options: SAMEORIGIN; set-cookie: __matomo=9ca9db90c6ae4c6b; expires=Thu, 15-Apr-2027 13:16:30 UTC; Path=/
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Exported RDS to `/data/user/eschwall/.cache/OmnipathR/8f45b25c384d814c7de210e7ca40b7e35894e4f1-1.rds`.
+[2025-04-15 15:16:31] [INFO]    [OmnipathR] Download ready [key=8f45b25c384d814c7de210e7ca40b7e35894e4f1, version=1]
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:16:31] [INFO]    [OmnipathR] Cache item `8f45b25c384d814c7de210e7ca40b7e35894e4f1` version 1: status changed from `started` to `ready`.
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] ID translation table: from `uniprot_entry` to `uniprot`, using `uniprot`.
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Creating ID mapping table from `id` to `accession`, for organism 9606 (only reviewed: TRUE)
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Loading all UniProt records for organism 9606 (only reviewed: TRUE); fields: id,accession
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Downloading by `generic_downloader`.
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Looking up in cache: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=id,accession&query=organism_id:9606%20AND%20reviewed:true`.
+[2025-04-15 15:16:31] [INFO]    [OmnipathR] Cache record does not exist: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=id,accession&query=organism_id:9606%20AND%20reviewed:true`
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Could not find in cache, initiating download: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=id,accession&query=organism_id:9606%20AND%20reviewed:true`.
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:16:31] [INFO]    [OmnipathR] Cache item `6558a1824894a625b8e3f80538cd3aa6e8a44379` version 1: status changed from `unknown` to `started`.
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Exporting object to RDS: `/data/user/eschwall/.cache/OmnipathR/6558a1824894a625b8e3f80538cd3aa6e8a44379-1.rds`.
+[2025-04-15 15:16:31] [INFO]    [OmnipathR] Retrieving URL: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=id,accession&query=organism_id:9606%20AND%20reviewed:true`
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Attempt 1/3: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=id,accession&query=organism_id:9606%20AND%20reviewed:true`
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] HTTP request by `omnipath_curl`.
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] The following curl options are not available: tcp_keepcnt
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Curl options: [connecttimeout=10,timeout=300,debugfunction=<function>,verbose=FALSE,tcp_keepalive=TRUE,tcp_keepintvl=10,tcp_keepidle=10,upkeep_interval_ms=30000,ssl_verifypeer=1,ssl_verifyhost=2]
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] HTTP v2 GET: status 200.
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] Downloaded 31 bytes in 0.689858s from rest.uniprot.org (44 bytes/s); Redirect: 0s, DNS look up: 0.03198s, Connection: 0.049322s, Pretransfer: 0.148484s, First byte at: 0.689783s
+[2025-04-15 15:16:31] [TRACE]   [OmnipathR] HTTP headers: HTTP/2 200 ; vary: accept,accept-encoding,x-uniprot-release,x-api-deployment-date; vary: User-Agent; cache-control: public, max-age=43200; content-type: text/plain;format=tsv; content-encoding: gzip; access-control-allow-credentials: true; access-control-expose-headers: Link, X-Total-Results, X-UniProt-Release, X-UniProt-Release-Date, X-API-Deployment-Date; x-api-deployment-date: 05-February-2025; strict-transport-security: max-age=31536000; includeSubDomains; date: Tue, 15 Apr 2025 13:16:31 GMT; access-control-max-age: 1728000; x-uniprot-release: 2025_01; access-control-allow-origin: *; access-control-allow-methods: GET, PUT, POST, DELETE, PATCH, OPTIONS; access-control-allow-headers: DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization; x-uniprot-release-date: 05-February-2025
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Exported RDS to `/data/user/eschwall/.cache/OmnipathR/6558a1824894a625b8e3f80538cd3aa6e8a44379-1.rds`.
+[2025-04-15 15:16:51] [INFO]    [OmnipathR] Download ready [key=6558a1824894a625b8e3f80538cd3aa6e8a44379, version=1]
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:16:51] [INFO]    [OmnipathR] Cache item `6558a1824894a625b8e3f80538cd3aa6e8a44379` version 1: status changed from `started` to `ready`.
+[2025-04-15 15:16:51] [SUCCESS] [OmnipathR] UniProt (rest.uniprot.org): downloaded 20417 records
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Translating complexes: 0 complexes in data.
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] 0 complexes after removing the ones mapping to more than 1 items in target identifier space.
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Translated 0 complexes to 0.
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] 13774 rows before translation, 13774 uniprot_entry IDs in column `id_organism_a`.
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] 13774 rows after translation; translated 13570 `uniprot_entry` IDs in column `id_organism_a` to 13570 `uniprot` IDs in column `id_organism_a`.
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] ID translation table: from `uniprot_entry` to `uniprot`, using `uniprot`.
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Creating ID mapping table from `id` to `accession`, for organism 10090 (only reviewed: TRUE)
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Loading all UniProt records for organism 10090 (only reviewed: TRUE); fields: id,accession
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Downloading by `generic_downloader`.
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Looking up in cache: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=id,accession&query=organism_id:10090%20AND%20reviewed:true`.
+[2025-04-15 15:16:51] [INFO]    [OmnipathR] Cache record does not exist: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=id,accession&query=organism_id:10090%20AND%20reviewed:true`
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Could not find in cache, initiating download: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=id,accession&query=organism_id:10090%20AND%20reviewed:true`.
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:16:51] [INFO]    [OmnipathR] Cache item `43ea5f2cdaa9ac7e0e114371af97235cdddd776f` version 1: status changed from `unknown` to `started`.
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Exporting object to RDS: `/data/user/eschwall/.cache/OmnipathR/43ea5f2cdaa9ac7e0e114371af97235cdddd776f-1.rds`.
+[2025-04-15 15:16:51] [INFO]    [OmnipathR] Retrieving URL: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=id,accession&query=organism_id:10090%20AND%20reviewed:true`
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Attempt 1/3: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=id,accession&query=organism_id:10090%20AND%20reviewed:true`
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] HTTP request by `omnipath_curl`.
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] The following curl options are not available: tcp_keepcnt
+[2025-04-15 15:16:51] [TRACE]   [OmnipathR] Curl options: [connecttimeout=10,timeout=300,debugfunction=<function>,verbose=FALSE,tcp_keepalive=TRUE,tcp_keepintvl=10,tcp_keepidle=10,upkeep_interval_ms=30000,ssl_verifypeer=1,ssl_verifyhost=2]
+[2025-04-15 15:16:52] [TRACE]   [OmnipathR] HTTP v2 GET: status 200.
+[2025-04-15 15:16:52] [TRACE]   [OmnipathR] Downloaded 31 bytes in 0.644356s from rest.uniprot.org (48 bytes/s); Redirect: 0s, DNS look up: 0.000914s, Connection: 0.018056s, Pretransfer: 0.114275s, First byte at: 0.644286s
+[2025-04-15 15:16:52] [TRACE]   [OmnipathR] HTTP headers: HTTP/2 200 ; vary: accept,accept-encoding,x-uniprot-release,x-api-deployment-date; vary: User-Agent; cache-control: public, max-age=43200; content-type: text/plain;format=tsv; content-encoding: gzip; access-control-allow-credentials: true; access-control-expose-headers: Link, X-Total-Results, X-UniProt-Release, X-UniProt-Release-Date, X-API-Deployment-Date; x-api-deployment-date: 05-February-2025; strict-transport-security: max-age=31536000; includeSubDomains; date: Tue, 15 Apr 2025 13:16:52 GMT; access-control-max-age: 1728000; x-uniprot-release: 2025_01; access-control-allow-origin: *; access-control-allow-methods: GET, PUT, POST, DELETE, PATCH, OPTIONS; access-control-allow-headers: DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization; x-uniprot-release-date: 05-February-2025
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Exported RDS to `/data/user/eschwall/.cache/OmnipathR/43ea5f2cdaa9ac7e0e114371af97235cdddd776f-1.rds`.
+[2025-04-15 15:17:03] [INFO]    [OmnipathR] Download ready [key=43ea5f2cdaa9ac7e0e114371af97235cdddd776f, version=1]
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:17:03] [INFO]    [OmnipathR] Cache item `43ea5f2cdaa9ac7e0e114371af97235cdddd776f` version 1: status changed from `started` to `ready`.
+[2025-04-15 15:17:03] [SUCCESS] [OmnipathR] UniProt (rest.uniprot.org): downloaded 17228 records
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Translating complexes: 0 complexes in data.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] 0 complexes after removing the ones mapping to more than 1 items in target identifier space.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Translated 0 complexes to 0.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] 13774 rows before translation, 13773 uniprot_entry IDs in column `id_organism_b`.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] 13774 rows after translation; translated 13273 `uniprot_entry` IDs in column `id_organism_b` to 13273 `uniprot` IDs in column `id_organism_b`.
+[2025-04-15 15:17:03] [INFO]    [OmnipathR] Loaded database `Orthologous Matrix (OMA) gene pairs`.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] ID translation table: from `uniprot` to `genesymbol`, using `uniprot`.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Creating ID mapping table from `accession` to `gene_primary`, for organism 10090 (only reviewed: TRUE)
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Loading all UniProt records for organism 10090 (only reviewed: TRUE); fields: accession,gene_primary
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Downloading by `generic_downloader`.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Looking up in cache: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=accession,gene_primary&query=organism_id:10090%20AND%20reviewed:true`.
+[2025-04-15 15:17:03] [INFO]    [OmnipathR] Cache record does not exist: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=accession,gene_primary&query=organism_id:10090%20AND%20reviewed:true`
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Could not find in cache, initiating download: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=accession,gene_primary&query=organism_id:10090%20AND%20reviewed:true`.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:17:03] [INFO]    [OmnipathR] Cache item `3ec84ba713c02573704adb50f1a94dab684df34b` version 1: status changed from `unknown` to `started`.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Exporting object to RDS: `/data/user/eschwall/.cache/OmnipathR/3ec84ba713c02573704adb50f1a94dab684df34b-1.rds`.
+[2025-04-15 15:17:03] [INFO]    [OmnipathR] Retrieving URL: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=accession,gene_primary&query=organism_id:10090%20AND%20reviewed:true`
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Attempt 1/3: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=accession,gene_primary&query=organism_id:10090%20AND%20reviewed:true`
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] HTTP request by `omnipath_curl`.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] The following curl options are not available: tcp_keepcnt
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Curl options: [connecttimeout=10,timeout=300,debugfunction=<function>,verbose=FALSE,tcp_keepalive=TRUE,tcp_keepintvl=10,tcp_keepidle=10,upkeep_interval_ms=30000,ssl_verifypeer=1,ssl_verifyhost=2]
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] HTTP v2 GET: status 200.
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] Downloaded 43 bytes in 0.509099s from rest.uniprot.org (84 bytes/s); Redirect: 0s, DNS look up: 0.000648s, Connection: 0.017961s, Pretransfer: 0.098396s, First byte at: 0.509049s
+[2025-04-15 15:17:03] [TRACE]   [OmnipathR] HTTP headers: HTTP/2 200 ; vary: accept,accept-encoding,x-uniprot-release,x-api-deployment-date; vary: User-Agent; cache-control: public, max-age=43200; content-type: text/plain;format=tsv; content-encoding: gzip; access-control-allow-credentials: true; access-control-expose-headers: Link, X-Total-Results, X-UniProt-Release, X-UniProt-Release-Date, X-API-Deployment-Date; x-api-deployment-date: 05-February-2025; strict-transport-security: max-age=31536000; includeSubDomains; date: Tue, 15 Apr 2025 13:17:03 GMT; access-control-max-age: 1728000; x-uniprot-release: 2025_01; access-control-allow-origin: *; access-control-allow-methods: GET, PUT, POST, DELETE, PATCH, OPTIONS; access-control-allow-headers: DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization; x-uniprot-release-date: 05-February-2025
+[2025-04-15 15:17:14] [TRACE]   [OmnipathR] Exported RDS to `/data/user/eschwall/.cache/OmnipathR/3ec84ba713c02573704adb50f1a94dab684df34b-1.rds`.
+[2025-04-15 15:17:14] [INFO]    [OmnipathR] Download ready [key=3ec84ba713c02573704adb50f1a94dab684df34b, version=1]
+[2025-04-15 15:17:14] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 15:17:14] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:17:14] [INFO]    [OmnipathR] Cache item `3ec84ba713c02573704adb50f1a94dab684df34b` version 1: status changed from `started` to `ready`.
+[2025-04-15 15:17:14] [SUCCESS] [OmnipathR] UniProt (rest.uniprot.org): downloaded 17228 records
+[2025-04-15 15:17:15] [TRACE]   [OmnipathR] Translating complexes: 0 complexes in data.
+[2025-04-15 15:17:15] [TRACE]   [OmnipathR] 0 complexes after removing the ones mapping to more than 1 items in target identifier space.
+[2025-04-15 15:17:15] [TRACE]   [OmnipathR] Translated 0 complexes to 0.
+[2025-04-15 15:17:15] [TRACE]   [OmnipathR] 164184 rows before translation, 12877 uniprot IDs in column `uniprot`.
+[2025-04-15 15:17:15] [TRACE]   [OmnipathR] 164184 rows after translation; translated 12877 `uniprot` IDs in column `uniprot` to 12790 `genesymbol` IDs in column `genesymbol`.
+[2025-04-15 15:19:34] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-04-15 15:19:34] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:19:34] [TRACE]   [OmnipathR] Processing args for OmniPath query
+[2025-04-15 15:19:34] [TRACE]   [OmnipathR] Arguments for OmniPath query: [wide=TRUE,resources=PROGENy,query_type=annotations]
+[2025-04-15 15:19:34] [TRACE]   [OmnipathR] Organism(s): 9606
+[2025-04-15 15:19:34] [TRACE]   [OmnipathR] Orthology targets: 
+[2025-04-15 15:19:34] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2025-04-15 15:19:34] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 15:19:34] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 15:19:35] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/3492392585ba05414edfae46801492076437d7e7-1.rds`.
+[2025-04-15 15:19:35] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/annotations?resources=PROGENy&license=academic`
+[2025-04-15 15:19:35] [SUCCESS] [OmnipathR] Loaded 700239 annotation records from cache.
+[2025-04-15 15:19:35] [TRACE]   [OmnipathR] ID translation table: from `uniprot` to `genesymbol`, using `uniprot`.
+[2025-04-15 15:19:35] [TRACE]   [OmnipathR] Creating ID mapping table from `accession` to `gene_primary`, for organism 10090 (only reviewed: TRUE)
+[2025-04-15 15:19:35] [TRACE]   [OmnipathR] Loading all UniProt records for organism 10090 (only reviewed: TRUE); fields: accession,gene_primary
+[2025-04-15 15:19:35] [TRACE]   [OmnipathR] Downloading by `generic_downloader`.
+[2025-04-15 15:19:35] [TRACE]   [OmnipathR] Looking up in cache: `https://rest.uniprot.org/uniprotkb/stream?format=tsv&fields=accession,gene_primary&query=organism_id:10090%20AND%20reviewed:true`.
+[2025-04-15 15:19:35] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/3ec84ba713c02573704adb50f1a94dab684df34b-1.rds`.
+[2025-04-15 15:19:35] [SUCCESS] [OmnipathR] UniProt (rest.uniprot.org): loaded 17228 records from cache
+[2025-04-15 15:19:36] [TRACE]   [OmnipathR] Translating complexes: 0 complexes in data.
+[2025-04-15 15:19:36] [TRACE]   [OmnipathR] 0 complexes after removing the ones mapping to more than 1 items in target identifier space.
+[2025-04-15 15:19:36] [TRACE]   [OmnipathR] Translated 0 complexes to 0.
+[2025-04-15 15:19:36] [TRACE]   [OmnipathR] 164184 rows before translation, 12877 uniprot IDs in column `uniprot`.
+[2025-04-15 15:19:36] [TRACE]   [OmnipathR] 164184 rows after translation; translated 12877 `uniprot` IDs in column `uniprot` to 12790 `genesymbol` IDs in column `genesymbol`.
+[2025-04-15 15:24:41] [TRACE]   [OmnipathR] Removing database `Orthologous Matrix (OMA) gene pairs` (not used in the past 300 seconds)

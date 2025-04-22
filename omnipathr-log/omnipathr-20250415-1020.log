@@ -1,0 +1,151 @@
+[2025-04-15 10:20:55] [INFO]    [OmnipathR] Welcome to OmnipathR!
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:55] [INFO]    [OmnipathR] Initialized cache: `/data/user/eschwall/.cache/OmnipathR`.
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/db/db_def.json` (encoding: UTF-8).
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/magic_bytes.json` (encoding: UTF-8).
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/urls.json` (encoding: UTF-8).
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/R/x86_64-pc-linux-gnu-library/4.3/OmnipathR/internal/id_types.json` (encoding: UTF-8).
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:55] [INFO]    [OmnipathR] Loading database `Ensembl and OMA organism names`.
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:55] [INFO]    [OmnipathR] Looking up in cache `https://www.ensembl.org/info/about/species.html`: key=7332486db7400730697234bad76ca0c8e4d00799, no version available.
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:55] [INFO]    [OmnipathR] Created new version for cache record 7332486db7400730697234bad76ca0c8e4d00799: version 1.
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] Cache file path: /data/user/eschwall/.cache/OmnipathR/7332486db7400730697234bad76ca0c8e4d00799-1.html
+[2025-04-15 10:20:55] [INFO]    [OmnipathR] Retrieving URL: `https://www.ensembl.org/info/about/species.html`
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] Attempt 1/3: `https://www.ensembl.org/info/about/species.html`
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] HTTP 200
+[2025-04-15 10:20:55] [INFO]    [OmnipathR] Download ready [key=7332486db7400730697234bad76ca0c8e4d00799, version=1]
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 10:20:55] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:55] [INFO]    [OmnipathR] Cache item `7332486db7400730697234bad76ca0c8e4d00799` version 1: status changed from `unknown` to `ready`.
+[2025-04-15 10:20:56] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2025-04-15 10:20:56] [INFO]    [OmnipathR] Cache record does not exist: `https://omabrowser.org/All/oma-species.txt`
+[2025-04-15 10:20:56] [TRACE]   [OmnipathR] Could not find in cache, initiating download: `https://omabrowser.org/All/oma-species.txt`.
+[2025-04-15 10:20:56] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 10:20:56] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:56] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 10:20:56] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:56] [INFO]    [OmnipathR] Cache item `30e690cbb55dfc63b5903ab337f34ffc2f4be397` version 1: status changed from `unknown` to `started`.
+[2025-04-15 10:20:56] [TRACE]   [OmnipathR] Exporting object to RDS: `/data/user/eschwall/.cache/OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2025-04-15 10:20:56] [INFO]    [OmnipathR] Retrieving URL: `https://omabrowser.org/All/oma-species.txt`
+[2025-04-15 10:20:56] [TRACE]   [OmnipathR] Attempt 1/3: `https://omabrowser.org/All/oma-species.txt`
+[2025-04-15 10:20:58] [TRACE]   [OmnipathR] Exported RDS to `/data/user/eschwall/.cache/OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2025-04-15 10:20:58] [INFO]    [OmnipathR] Download ready [key=30e690cbb55dfc63b5903ab337f34ffc2f4be397, version=1]
+[2025-04-15 10:20:58] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 10:20:58] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:58] [INFO]    [OmnipathR] Cache item `30e690cbb55dfc63b5903ab337f34ffc2f4be397` version 1: status changed from `started` to `ready`.
+[2025-04-15 10:20:58] [INFO]    [OmnipathR] Loaded database `Ensembl and OMA organism names`.
+[2025-04-15 10:20:58] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:20:58] [INFO]    [OmnipathR] Cache record does not exist: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:20:58] [TRACE]   [OmnipathR] Looking up in cache: `http://no-tls.omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:20:58] [INFO]    [OmnipathR] Cache record does not exist: `http://no-tls.omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:20:58] [TRACE]   [OmnipathR] Attempting `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:20:58] [INFO]    [OmnipathR] Retrieving URL: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:20:58] [TRACE]   [OmnipathR] Attempt 1/3: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:20:59] [INFO]    [OmnipathR] Successfully retrieved: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:20:59] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 10:20:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:59] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 10:20:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:59] [INFO]    [OmnipathR] Cache item `099e7af92f71a88d7560d65cea14c1970f66c0b6` version 1: status changed from `unknown` to `started`.
+[2025-04-15 10:20:59] [TRACE]   [OmnipathR] Exporting object to RDS: `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:20:59] [TRACE]   [OmnipathR] Exported RDS to `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:20:59] [INFO]    [OmnipathR] Download ready [key=099e7af92f71a88d7560d65cea14c1970f66c0b6, version=1]
+[2025-04-15 10:20:59] [TRACE]   [OmnipathR] Reading JSON from `/data/user/eschwall/.cache/OmnipathR/cache.json` (encoding: UTF-8).
+[2025-04-15 10:20:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2025-04-15 10:20:59] [INFO]    [OmnipathR] Cache item `099e7af92f71a88d7560d65cea14c1970f66c0b6` version 1: status changed from `started` to `ready`.
+[2025-04-15 10:20:59] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 10:21:01] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 10:21:03] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 10:21:24] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 10:34:50] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:34:50] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:34:50] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:34:50] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 10:34:51] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 10:34:52] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 10:35:12] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 10:41:03] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:41:03] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:41:03] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:41:03] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 10:41:05] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 10:41:07] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 10:41:25] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 10:43:10] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:43:10] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:43:10] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:43:10] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 10:43:11] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 10:43:13] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 10:43:32] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 10:43:49] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:43:49] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:43:49] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:43:49] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 10:43:50] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 10:43:52] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 10:44:10] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 10:44:50] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:44:50] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:44:50] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:44:50] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 10:44:52] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 10:44:54] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 10:45:13] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 10:46:04] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:46:04] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:46:04] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:46:04] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 10:46:06] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 10:46:08] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 10:46:29] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 10:46:45] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:46:45] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:46:45] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:46:45] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 10:46:46] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 10:46:48] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 10:47:10] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 10:51:45] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:51:45] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:51:45] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:51:45] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 10:51:47] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 10:51:49] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 10:52:10] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 10:56:54] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:56:54] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 10:56:54] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 10:56:54] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 10:56:56] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 10:56:58] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 10:57:19] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 12:30:29] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 12:30:29] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 12:30:29] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 12:30:29] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 12:30:30] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 12:30:32] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 12:30:56] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 13:12:37] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 13:12:38] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 13:12:38] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 13:12:38] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 13:12:39] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 13:12:40] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 13:12:59] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.
+[2025-04-15 13:15:35] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 13:15:35] [TRACE]   [OmnipathR] Loaded data from RDS `/data/user/eschwall/.cache/OmnipathR/099e7af92f71a88d7560d65cea14c1970f66c0b6-1.rds`.
+[2025-04-15 13:15:35] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/interactions?genesymbols=yes&datasets=collectri&organisms=9606&dorothea_levels=A,B&fields=evidences,sources,references,curation_effort&license=academic`
+[2025-04-15 13:15:35] [TRACE]   [OmnipathR] Converting JSON column `evidences` to list.
+[2025-04-15 13:15:37] [TRACE]   [OmnipathR] Restricting interaction records to datasets: collectri; and resources: any
+[2025-04-15 13:15:38] [TRACE]   [OmnipathR] Filtering evidence columns: positive, negative, directed, undirected; to datasets: collectri; and resources: any
+[2025-04-15 13:16:03] [SUCCESS] [OmnipathR] Downloaded 64495 interactions.

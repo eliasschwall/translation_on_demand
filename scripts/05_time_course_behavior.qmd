@@ -1,14 +1,80 @@
 ---
-title: "Untitled"
+title: "Time Course Behavoir Visualizations"
 format: html
+server: shiny
 ---
 
 
 ```{r}
-proteomic_data <- here("data/processed/yang_paper/","yang_proteomics.rds") %>% readRDS()
-dds <- here("data/processed/","dds.rds") %>% readRDS()
+#| context: setup
+#| message: false 
 
-transcriptomic_data <- DESeq2::counts(dds, normalized = TRUE) %>% 
-    cbind(., rowData(dds)$mgi_symbol) %>% 
-    # mutating to avarage the replicates
+library(tidyverse)
+library(here)
+
+trans_prot_data <- here("data/processed/yang_paper/", "trans_prot_data.rds") %>% readRDS() %>% 
+  dplyr::select(-ensembl_gene_id, -UniprotID) %>% 
+  column_to_rownames("mgi_symbol") %>% 
+  mutate(
+    LFC0_trans = log(h0_trans / h0_trans),
+    LFC1_trans = log(h1_trans / h0_trans+ 0.0001),
+    LFC6_trans = log(h6_trans / h0_trans+ 0.0001),
+    LFC12_trans = log(h12_trans / h0_trans+ 0.0001),
+    LFC24_trans = log(h24_trans / h0_trans+ 0.0001),
+    LFC36_trans = log(h36_trans / h0_trans+ 0.0001),
+    LFC48_trans = log(h48_trans / h0_trans+ 0.0001),
+    LFC72_trans = log(h72_trans / h0_trans+ 0.0001),
+    LFC0_prot = h0_prot - h0_prot,
+    LFC1_prot = h1_prot - h0_prot,
+    LFC6_prot = h6_prot - h0_prot,
+    LFC12_prot = h12_prot - h0_prot,
+    LFC24_prot = h24_prot - h0_prot,
+    LFC36_prot = h36_prot - h0_prot,
+    LFC48_prot = h48_prot - h0_prot,
+    LFC72_prot = h72_prot - h0_prot
+         ) %>% 
+    dplyr::select(LFC0_trans,LFC1_trans,LFC6_trans,LFC12_trans,LFC24_trans,LFC36_trans,LFC48_trans,
+                  LFC72_trans,LFC0_prot,LFC1_prot,LFC6_prot,LFC12_prot,LFC24_prot,LFC36_prot,LFC48_prot,
+                  LFC72_prot) %>% 
+  dplyr::filter(!is.na(LFC0_prot))
 ```
+
+```{r}
+#| warning: false
+selectInput("gene", "Select a Gene:", choices = rownames(trans_prot_data), selected = rownames(trans_prot_data)[1])
+
+plotOutput("lfcPlot")
+```
+
+
+
+```{r}
+#| context: server
+library(tidyverse)
+
+dataset <- reactive({
+  trans_prot_data[input$gene, ] %>% 
+    pivot_longer(
+     cols = everything(),  
+     names_to = c("timepoint", "type"),  
+     names_pattern = "LFC(.+)_(.+)" 
+ ) %>% 
+    mutate(timepoint = factor(as.character(timepoint), levels = c("0","1","6","12","24","36","48","72")))
+})
+
+
+
+
+output$lfcPlot <- renderPlot({
+  ggplot(dataset(), aes(x = timepoint, y = value, colour = type, group = type)) +
+    geom_point() +
+    geom_line() + 
+    theme_minimal() +
+    labs(y = "LFC compared to 0h", x = "Hour")
+})
+
+
+```
+
+
+

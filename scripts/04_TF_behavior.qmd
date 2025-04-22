@@ -3,6 +3,8 @@ title: "04_TF_behavior"
 format: html
 ---
 
+Run this script in the meme docker because pandoc is installed to render the html selfcontained 
+
 ```{r}
 #| label: loading ToD candidates and set up
 
@@ -38,7 +40,7 @@ matched_list <- readRDS(here::here("data/processed", "matched_list.rds"))
 # merge all time points in one df
 merged_matched <- Reduce(function(x, y) merge(x, y, by = "mgi_symbol", all = TRUE), matched_list) %>%
   janitor::clean_names() %>%
-  select(mgi_symbol, colnames(.)[str_detect(colnames(.), "diff")]) %>%
+  dplyr::select(mgi_symbol, colnames(.)[str_detect(colnames(.), "diff")]) %>%
   setNames(c("gene", "h0_h1", "h1_h6", "h6_h12", "h12_h24", "h24_h36", "h36_h48", "h48_h72"))
 
 # filtering this df for all ToD TFs
@@ -57,13 +59,16 @@ merged_matched_TFs <- merged_matched %>% filter(gene %in% ToDCs_TFs_all)
 # Transform the data for ggplot
 data_long <- merged_matched_TFs %>%
   pivot_longer(cols = -gene, names_to = "timepoint", values_to = "value") %>%
-  mutate(timepoint = recode(timepoint,
+mutate(timepoint = recode(timepoint,
     h0_h1 = "0-1h",
     h1_h6 = "1-6h",
     h6_h12 = "6-12h",
     h12_h24 = "12-24h",
-    h24_h36 = "24-36h"
-  ))
+    h24_h36 = "24-36h",
+    h36_h48 = "36-48h",
+    h48_h72 = "48-72h"
+  )) %>% 
+    mutate(timepoint = factor(timepoint, levels = c("0-1h","1-6h","6-12h","12-24h","24-36h","36-48h","48-72h")))
 
 # Create the plot
 p <- ggplot(data_long, aes(x = timepoint, y = value, group = gene, color = gene)) +
@@ -88,5 +93,180 @@ for (i in 1:length(p_plotly$x$data)) {
 # Show the plot
 p_plotly
 
-htmlwidgets::saveWidget(p_plotly, here::here("results/", "TF_Prot_RNA_LFC_Ratio_temporal_behavoir.html"))
+htmlwidgets::saveWidget(p_plotly, here::here("results/", "TF_Prot_RNA_LFC_Ratio_temporal_behavoir.html"), selfcontained = T)
+```
+
+
+
+
+```{r TF activity}
+library(tidyverse)
+dds <- here::here("data/processed/","dds.rds") %>% readRDS()
+
+counts <- DESeq2::counts(dds, normalized = T) %>% 
+  as.data.frame() %>% 
+  rownames_to_column("ensembl_id") %>% 
+  mutate(ensembl_id = sub("\\..*", "", ensembl_id)) %>% 
+  mutate(symbol = AnnotationDbi::mapIds(org.Mm.eg.db::org.Mm.eg.db,
+                          keys = ensembl_id,
+                          column = "SYMBOL",
+                          keytype = "ENSEMBL",
+                          multiVals = "first")) %>% 
+  dplyr::select(-ensembl_id) %>% 
+  group_by(symbol) %>%
+  summarise(across(everything(), mean, na.rm = TRUE), .groups = 'drop') %>%
+  ungroup() %>% 
+  dplyr::filter(!is.na(symbol)) %>% 
+  column_to_rownames("symbol") %>% 
+  select("X0h_rep1",  "X0h_rep2",  "X1h_rep1",  "X1h_rep2")
+
+
+
+
+design <- SummarizedExperiment::colData(dds) %>% as_tibble()
+res <- DESeq2::results(dds, contrast = c("timepoint", "1h", "0h")) %>% 
+  as.data.frame() %>% 
+  dplyr::select(log2FoldChange, stat, padj) %>% 
+  rownames_to_column("ensembl_id") %>% 
+  mutate(ensembl_id = sub("\\..*", "", ensembl_id)) %>% 
+  mutate(symbol = AnnotationDbi::mapIds(org.Mm.eg.db::org.Mm.eg.db,
+                          keys = ensembl_id,
+                          column = "SYMBOL",
+                          keytype = "ENSEMBL",
+                          multiVals = "first")) %>% 
+  dplyr::select(-ensembl_id) %>% 
+  group_by(symbol) %>%
+  summarise(across(everything(), mean, na.rm = TRUE), .groups = 'drop') %>%
+  ungroup() %>% 
+  dplyr::filter(!is.na(symbol)) %>% 
+  column_to_rownames("symbol") %>% 
+  dplyr::select(stat)
+
+
+net <- decoupleR::get_dorothea(organism = "mouse", levels = c("A", "B"))
+
+sample_acts <- decoupleR::run_ulm(
+  mat=counts, 
+  net=net, 
+  .source='source', 
+  .target='target',
+  .mor='mor', 
+  minsize = 5
+  )
+```
+
+
+
+```{r}
+n_tfs <- 25
+
+# Transform to wide matrix
+sample_acts_mat <- sample_acts %>%
+  pivot_wider(id_cols = 'condition', names_from = 'source',
+              values_from = 'score') %>%
+  column_to_rownames('condition') %>%
+  as.matrix()
+
+# Get top tfs with more variable means across clusters
+tfs <- sample_acts %>%
+  group_by(source) %>%
+  summarise(std = sd(score)) %>%
+  arrange(-abs(std)) %>%
+  head(n_tfs) %>%
+  pull(source)
+sample_acts_mat <- sample_acts_mat[,tfs]
+
+# Scale per sample
+sample_acts_mat <- scale(sample_acts_mat)
+
+# Choose color palette
+palette_length = 100
+my_color = colorRampPalette(c("Darkblue", "white","red"))(palette_length)
+
+my_breaks <- c(seq(-3, 0, length.out=ceiling(palette_length/2) + 1),
+               seq(0.05, 3, length.out=floor(palette_length/2)))
+
+# Plot
+pheatmap::pheatmap(sample_acts_mat, border_color = NA, color=my_color, breaks = my_breaks)
+```
+
+```{r}
+library(ggrepel)
+tf <- 'Prdm14'
+
+df <- net %>%
+  filter(source == tf) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+
+inter <- sort(intersect(rownames(res),rownames(df)))
+df <- df[inter, ]
+df[,c('logfc', 't_value', 'p_value')] <- res[inter, ]
+df <- df %>%
+  mutate(color = if_else(mor > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(mor > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(mor < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(mor < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = logfc, y = -log10(p_value), color = color, size=abs(mor))) +
+  geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID, size=1)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted') +
+  ggtitle(tf)
+```
+
+```{r}
+net_path <- decoupleR::get_progeny(organism = 'mouse', top = 500)
+contrast_acts <- decoupleR::run_mlm(mat=res, net=net_path, .source='source', .target='target',
+                  .mor='weight', minsize = 5)
+                  
+ggplot(contrast_acts, aes(x = reorder(source, score), y = score)) + 
+    geom_bar(aes(fill = score), stat = "identity") +
+    scale_fill_gradient2(low = "darkblue", high = "indianred", 
+        mid = "whitesmoke", midpoint = 0) + 
+    theme_minimal() +
+    theme(axis.title = element_text(face = "bold", size = 12),
+        axis.text.x = 
+            element_text(angle = 45, hjust = 1, size =10, face= "bold"),
+        axis.text.y = element_text(size =10, face= "bold"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) +
+    xlab("Pathways")
+
+```
+
+
+
+```{r}
+# MAPK, WNT, JAK-STAT, EGFR, TGFb, PI
+library(ggrepel)
+pathway <- 'MAPK'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted') +
+  ggtitle(pathway)
 ```

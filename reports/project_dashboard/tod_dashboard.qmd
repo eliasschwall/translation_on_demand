@@ -393,8 +393,11 @@ data_long <- merged_matched_TFs %>%
     h1_h6 = "1-6h",
     h6_h12 = "6-12h",
     h12_h24 = "12-24h",
-    h24_h36 = "24-36h"
-  ))
+    h24_h36 = "24-36h",
+    h36_h48 = "36-48h",
+    h48_h72 = "48-72h"
+  )) %>% 
+    mutate(timepoint = factor(timepoint, levels = c("0-1h","1-6h","6-12h","12-24h","24-36h","36-48h","48-72h")))
 
 # Create the plot
 p <- ggplot(data_long, aes(x = timepoint, y = value, group = gene, color = gene)) +
@@ -418,6 +421,431 @@ for (i in 1:length(p_plotly$x$data)) {
 
 # Show the plot
 p_plotly
+```
+
+## Row
+```{r Pathway activity}
+#| include: false
+library(ggrepel)
+dds <- here::here("data/processed/","dds.rds") %>% readRDS()
+
+design <- SummarizedExperiment::colData(dds) %>% as_tibble()
+res_1_vs_0 <- DESeq2::results(dds, contrast = c("timepoint", "1h", "0h")) %>% 
+  as.data.frame() %>% 
+  dplyr::select(log2FoldChange, stat, padj) %>% 
+  rownames_to_column("ensembl_id") %>% 
+  mutate(ensembl_id = sub("\\..*", "", ensembl_id)) %>% 
+  mutate(symbol = AnnotationDbi::mapIds(org.Mm.eg.db::org.Mm.eg.db,
+                          keys = ensembl_id,
+                          column = "SYMBOL",
+                          keytype = "ENSEMBL",
+                          multiVals = "first")) %>% 
+  dplyr::select(-ensembl_id) %>% 
+  group_by(symbol) %>%
+  summarise(across(everything(), mean, na.rm = TRUE), .groups = 'drop') %>%
+  ungroup() %>% 
+  dplyr::filter(!is.na(symbol)) %>% 
+  column_to_rownames("symbol") %>% 
+  dplyr::select(stat)
+
+res_6_vs_1 <- DESeq2::results(dds, contrast = c("timepoint", "6h", "1h")) %>% 
+  as.data.frame() %>% 
+  dplyr::select(log2FoldChange, stat, padj) %>% 
+  rownames_to_column("ensembl_id") %>% 
+  mutate(ensembl_id = sub("\\..*", "", ensembl_id)) %>% 
+  mutate(symbol = AnnotationDbi::mapIds(org.Mm.eg.db::org.Mm.eg.db,
+                          keys = ensembl_id,
+                          column = "SYMBOL",
+                          keytype = "ENSEMBL",
+                          multiVals = "first")) %>% 
+  dplyr::select(-ensembl_id) %>% 
+  group_by(symbol) %>%
+  summarise(across(everything(), mean, na.rm = TRUE), .groups = 'drop') %>%
+  ungroup() %>% 
+  dplyr::filter(!is.na(symbol)) %>% 
+  column_to_rownames("symbol") %>% 
+  dplyr::select(stat)
+
+net_path <- decoupleR::get_progeny(organism = 'mouse', top = 500)
+contrast_acts_1_vs_0 <- decoupleR::run_mlm(mat=res_1_vs_0, net=net_path, .source='source', .target='target', .mor='weight', minsize = 5)
+
+contrast_acts_6_vs_1 <- decoupleR::run_mlm(mat=res_6_vs_1, net=net_path, .source='source', .target='target', .mor='weight', minsize = 5)
+```
+
+### Column
+```{r} 
+#| title: Core Pathways regulation between 1h and 0h               
+ggplot(contrast_acts_1_vs_0, aes(x = reorder(source, score), y = score)) + 
+    geom_bar(aes(fill = score), stat = "identity") +
+    scale_fill_gradient2(low = "darkblue", high = "indianred", 
+        mid = "whitesmoke", midpoint = 0) + 
+    theme_minimal() +
+    theme(axis.title = element_text(face = "bold", size = 12),
+        axis.text.x = 
+            element_text(angle = 45, hjust = 1, size =10, face= "bold"),
+        axis.text.y = element_text(size =10, face= "bold"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) +
+    xlab("Pathways") 
+```
+
+### Column {.tabset title="Specific Pathway regulators between 1h and 0h"}
+```{r}
+#| title: MAPK
+
+pathway <- 'MAPK'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_1_vs_0),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_1_vs_0[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted') +
+  ylab("DESeq stats")
+```
+
+```{r}
+#| title: PI3K
+
+pathway <- 'PI3K'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_1_vs_0),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_1_vs_0[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted')
+```
+
+```{r}
+#| title: EGFR
+
+pathway <- 'EGFR'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_1_vs_0),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_1_vs_0[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted')
+```
+
+```{r}
+#| title: TGFb
+
+pathway <- 'TGFb'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_1_vs_0),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_1_vs_0[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted')
+```
+
+```{r}
+#| title: WNT
+
+pathway <- 'WNT'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_1_vs_0),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_1_vs_0[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted')
+```
+
+```{r}
+#| title: JAK-STAT
+
+pathway <- 'JAK-STAT'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_1_vs_0),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_1_vs_0[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted')
+```
+
+## Row
+
+### Column
+```{r} 
+#| title: Core Pathways regulation between 6h and 1h               
+ggplot(contrast_acts_6_vs_1, aes(x = reorder(source, score), y = score)) + 
+    geom_bar(aes(fill = score), stat = "identity") +
+    scale_fill_gradient2(low = "darkblue", high = "indianred", 
+        mid = "whitesmoke", midpoint = 0) + 
+    theme_minimal() +
+    theme(axis.title = element_text(face = "bold", size = 12),
+        axis.text.x = 
+            element_text(angle = 45, hjust = 1, size =10, face= "bold"),
+        axis.text.y = element_text(size =10, face= "bold"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) +
+    xlab("Pathways") 
+```
+
+### Column {.tabset title="Specific Pathway regulators between 6h and 1h"}
+```{r}
+#| title: MAPK
+
+pathway <- 'MAPK'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_6_vs_1),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_6_vs_1[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted') +
+  ylab("DESeq stats")
+```
+
+```{r}
+#| title: PI3K
+
+pathway <- 'PI3K'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_6_vs_1),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_6_vs_1[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted')
+```
+
+```{r}
+#| title: EGFR
+
+pathway <- 'EGFR'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_6_vs_1),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_6_vs_1[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted')
+```
+
+```{r}
+#| title: TGFb
+
+pathway <- 'TGFb'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_6_vs_1),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_6_vs_1[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted')
+```
+
+```{r}
+#| title: WNT
+
+pathway <- 'WNT'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_6_vs_1),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_6_vs_1[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted')
+```
+
+```{r}
+#| title: JAK-STAT
+
+pathway <- 'JAK-STAT'
+
+df <- net_path %>%
+  filter(source == pathway) %>%
+  arrange(target) %>%
+  mutate(ID = target, color = "3") %>%
+  column_to_rownames('target')
+inter <- sort(intersect(rownames(res_6_vs_1),rownames(df)))
+df <- df[inter, ]
+df['t_value'] <- res_6_vs_1[inter, ]
+df <- df %>%
+  mutate(color = if_else(weight > 0 & t_value > 0, '1', color)) %>%
+  mutate(color = if_else(weight > 0 & t_value < 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value > 0, '2', color)) %>%
+  mutate(color = if_else(weight < 0 & t_value < 0, '1', color))
+
+ggplot(df, aes(x = weight, y = t_value, color = color)) + geom_point() +
+  scale_colour_manual(values = c("red","royalblue3","grey")) +
+  geom_label_repel(aes(label = ID)) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_vline(xintercept = 0, linetype = 'dotted') +
+  geom_hline(yintercept = 0, linetype = 'dotted')
 ```
 
 # Motif Analysis 
@@ -726,6 +1154,86 @@ Predicted to enable RNA binding activity and identical protein binding activity.
 ::: {.card title="Prrc1 / M044"}
 Predicted to enable protein kinase A regulatory subunit binding activity. Predicted to be involved in epithelial structure maintenance. Predicted to be located in Golgi apparatus. Predicted to be active in cytoplasm. Is expressed in Meckel's cartilage; chondrocranium; and olfactory epithelium.
 :::
+
+## Row
+```{r}
+#| title: RBP RNA and Protein expression over time points 
+library(ggrepel)
+library(patchwork)
+trans_prot_data <- here("data/processed/yang_paper/", "trans_prot_data.rds") %>% readRDS()
+RNA_binding_proteins <- here("data/processed/", "RNA_binding_proteins.rds") %>% readRDS()
+
+long_trans_data <- trans_prot_data %>%
+  filter(mgi_symbol %in% RNA_binding_proteins) %>%
+  dplyr::select(mgi_symbol, h0_trans, h1_trans, h6_trans, h12_trans, h24_trans, h36_trans, h48_trans, h72_trans) %>%
+  pivot_longer(
+    cols = starts_with("h"), # Select all columns starting with 'h'
+    names_to = "time_point", # New column for the names of the columns
+    values_to = "trans_value" # New column for the values
+  ) %>%
+  mutate(time_point = factor(time_point, levels = c("h0_trans", "h1_trans", "h6_trans", "h12_trans", "h24_trans", "h36_trans", "h48_trans", "h72_trans")),
+         trans_value = log10(trans_value))
+
+long_prot_data <- trans_prot_data %>%
+  filter(mgi_symbol %in% RNA_binding_proteins) %>%
+  dplyr::select(mgi_symbol, h0_prot, h1_prot, h6_prot, h12_prot, h24_prot, h36_prot, h48_prot, h72_prot) %>%
+  pivot_longer(
+    cols = starts_with("h"), # Select all columns starting with 'h'
+    names_to = "time_point", # New column for the names of the columns
+    values_to = "prot_value" # New column for the values
+  ) %>%
+  mutate(time_point = factor(time_point, levels = c("h0_prot", "h1_prot", "h6_prot", "h12_prot", "h24_prot", "h36_prot", "h48_prot", "h72_prot")))
+
+p1 <- ggplot(long_trans_data, aes(x = time_point, y = trans_value, group = mgi_symbol, color = mgi_symbol)) +
+  geom_line() + # Add lines for each mgi_symbol
+  geom_point() + # Add points at each time point
+  labs(
+    title = "RNA",
+    x = "Time Point",
+    y = "log10(Gene Expression Value)"
+  ) +
+  theme_minimal() + # Use a clean theme
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  ) +
+  geom_text_repel(
+    data = long_trans_data %>%
+      group_by(mgi_symbol) %>%
+      filter(time_point == "h72_trans"),
+    aes(label = mgi_symbol),
+    size = 3,
+    nudge_x = 1.5,
+    direction = "y",
+    hjust = 0
+  )
+
+p2 <- ggplot(long_prot_data, aes(x = time_point, y = prot_value, group = mgi_symbol, color = mgi_symbol)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Protein",
+    x = "Time Point",
+    y = "Protein Expression Value"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  ) +
+  geom_text_repel(
+    data = long_prot_data %>%
+      group_by(mgi_symbol) %>%
+      filter(time_point == "h72_prot"),
+    aes(label = mgi_symbol),
+    size = 3,
+    nudge_x = 1.5,
+    direction = "y",
+    hjust = 0
+  ) 
+
+p1 + p2 
+```
 
 # UTR Metrics
 

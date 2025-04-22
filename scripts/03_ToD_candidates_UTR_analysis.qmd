@@ -8,7 +8,7 @@ ToD_candidates_list <- here("data/processed", "ToD_candidates_list.rds") %>% rea
 ```
 
 ```{r UTRs}
-#| label: fatching the UTR data from biomart 
+#| label: fatching the UTR data from biomart
 
 mart <- biomaRt::useEnsembl(biomart = "genes", dataset = "mmusculus_gene_ensembl")
 
@@ -22,10 +22,10 @@ names(ToDC_all_utrs) <- names(ToD_candidates_list)
 saveRDS(ToDC_all_utrs, here("data/reference", "ToDC_all_utrs.rds"))
 
 # now also for all genes in the matched data
-background_utrs <- here("data/processed/", "background_genes.rds") %>% 
-  readRDS() %>% 
-  as.data.frame() %>% 
-  setNames(c("mgi_symbol")) %>% 
+background_utrs <- here("data/processed/", "background_genes.rds") %>%
+  readRDS() %>%
+  as.data.frame() %>%
+  setNames(c("mgi_symbol")) %>%
   get_utrs()
 
 saveRDS(background_utrs, here("data/reference", "background_utrs.rds"))
@@ -35,23 +35,29 @@ saveRDS(background_utrs, here("data/reference", "background_utrs.rds"))
 input_genes <- ToD_candidates_list[["1h_vs_0h"]]$mgi_symbol
 
 # Analyze 5' UTRs
-five_prime_analysis <- analyze_utr_data(ToDC_all_utrs$`1h_vs_0h`$utr_5, 
-                                      input_genes, 
-                                      "1h_vs_0h", 
-                                      "five_prime")
+five_prime_analysis <- analyze_utr_data(
+  ToDC_all_utrs$`1h_vs_0h`$utr_5,
+  input_genes,
+  "1h_vs_0h",
+  "five_prime"
+)
 
 # Analyze 3' UTRs
-three_prime_analysis <- analyze_utr_data(ToDC_all_utrs$`1h_vs_0h`$utr_3, 
-                                       input_genes, 
-                                       "1h_vs_0h", 
-                                       "three_prime")
+three_prime_analysis <- analyze_utr_data(
+  ToDC_all_utrs$`1h_vs_0h`$utr_3,
+  input_genes,
+  "1h_vs_0h",
+  "three_prime"
+)
 ```
 
 ```{r}
-#| label: Meme Analsis 
+#| label: Meme Analsis
 memes::check_meme_install(meme_path = "/meme_installation/meme-5.5.7/meme/bin/")
 library(memes)
-background_genes <- readRDS("/data/data/processed/background_genes.rds") %>% as.data.frame() %>% setNames(c("mgi_symbols"))
+background_genes <- readRDS("/data/data/processed/background_genes.rds") %>%
+  as.data.frame() %>%
+  setNames(c("mgi_symbols"))
 all_utrs <- get_utrs(background_genes)
 all_5_UTRs <- Biostrings::DNAStringSet(all_utrs$utr_5$five_prime_utr)
 names(all_5_UTRs) <- all_utrs$utr_5$mgi_symbol
@@ -63,43 +69,51 @@ h6_vs_h1_5_prime_utrs <- Biostrings::DNAStringSet(ToDC_all_utrs$`6h_vs_1h`$utr_5
 names(h6_vs_h1_5_prime_utrs) <- ToDC_all_utrs$`6h_vs_1h`$utr_5$mgi_symbol
 
 
-runAme(input = h6_vs_h1_5_prime_utrs,
-       control = all_5_UTRs,
-       database = "/data/data/reference/motif_databases/CISBP-RNA/Mus_musculus.meme",
-       meme_path = "/meme_installation/meme-5.5.7/meme/bin/") %>% plot_ame_heatmap()
+runAme(
+  input = h6_vs_h1_5_prime_utrs,
+  control = all_5_UTRs,
+  database = "/data/data/reference/motif_databases/CISBP-RNA/Mus_musculus.meme",
+  meme_path = "/meme_installation/meme-5.5.7/meme/bin/"
+) %>% plot_ame_heatmap()
 ```
 
 ```{r}
-RBP_motif_enrichmets <- tod_list_ame_wrapper(todc_list = ToDC_all_utrs,
-                                             background_sequences = all_utrs,
-                                             motif_database_path = "/data/data/reference/motif_databases/CISBP-RNA/Mus_musculus.meme")
+RBP_motif_enrichmets <- tod_list_ame_wrapper(
+  todc_list = ToDC_all_utrs,
+  background_sequences = all_utrs,
+  motif_database_path = "/data/data/reference/motif_databases/CISBP-RNA/Mus_musculus.meme"
+)
 
 saveRDS(RBP_motif_enrichmets, file = here::here("results/meme_analysis", "RBP_motif_enrichmets.rds"))
 
 RBP_motif_enrichmets <- readRDS(here::here("results/meme_analysis", "RBP_motif_enrichmets.rds"))
 
-RBP_motif_enrichmets_df <- rbind(RBP_motif_enrichmets$`1h_vs_0h`$utr_5, 
-                                 RBP_motif_enrichmets$`1h_vs_0h`$utr_3,
-                                 RBP_motif_enrichmets$`6h_vs_1h`$utr_5,
-                                 RBP_motif_enrichmets$`12h_vs_6h`$utr_5,
-                                 RBP_motif_enrichmets$`24h_vs_12h`$utr_5,
-                                 RBP_motif_enrichmets$`36h_vs_24h`$utr_5,
-                                 RBP_motif_enrichmets$`48h_vs_36h`$utr_5,
-                                 RBP_motif_enrichmets$`48h_vs_36h`$utr_3,
-                                 RBP_motif_enrichmets$`72h_vs_48h`$utr_5,
-                                 RBP_motif_enrichmets$`72h_vs_48h`$utr_3) %>% 
-  mutate(time_interval = c(rep("1h_vs_0h_utr_5", nrow(RBP_motif_enrichmets$`1h_vs_0h`$utr_5)),
-                           rep("1h_vs_0h_utr_3", nrow(RBP_motif_enrichmets$`1h_vs_0h`$utr_3)),
-                           rep("6h_vs_1h_utr_5", nrow(RBP_motif_enrichmets$`6h_vs_1h`$utr_5)),
-                           rep("12h_vs_6h_utr_5", nrow(RBP_motif_enrichmets$`12h_vs_6h`$utr_5)),
-                           rep("24h_vs_12h_utr_5", nrow(RBP_motif_enrichmets$`24h_vs_12h`$utr_5)),
-                           rep("36h_vs_24h_utr_5", nrow(RBP_motif_enrichmets$`36h_vs_24h`$utr_5)),
-                           rep("48h_vs_36h_utr_5", nrow(RBP_motif_enrichmets$`48h_vs_36h`$utr_5)),
-                           rep("48h_vs_36h_utr_3", nrow(RBP_motif_enrichmets$`48h_vs_36h`$utr_3)),
-                           rep("72h_vs_48h_utr_5", nrow(RBP_motif_enrichmets$`72h_vs_48h`$utr_5)),
-                           rep("72h_vs_48h_utr_3", nrow(RBP_motif_enrichmets$`72h_vs_48h`$utr_3)))) %>% 
-  relocate(time_interval, .before = rank) %>% 
-  select(-motif_db)
+RBP_motif_enrichmets_df <- rbind(
+  RBP_motif_enrichmets$`1h_vs_0h`$utr_5,
+  RBP_motif_enrichmets$`1h_vs_0h`$utr_3,
+  RBP_motif_enrichmets$`6h_vs_1h`$utr_5,
+  RBP_motif_enrichmets$`12h_vs_6h`$utr_5,
+  RBP_motif_enrichmets$`24h_vs_12h`$utr_5,
+  RBP_motif_enrichmets$`36h_vs_24h`$utr_5,
+  RBP_motif_enrichmets$`48h_vs_36h`$utr_5,
+  RBP_motif_enrichmets$`48h_vs_36h`$utr_3,
+  RBP_motif_enrichmets$`72h_vs_48h`$utr_5,
+  RBP_motif_enrichmets$`72h_vs_48h`$utr_3
+) %>%
+  mutate(time_interval = c(
+    rep("1h_vs_0h_utr_5", nrow(RBP_motif_enrichmets$`1h_vs_0h`$utr_5)),
+    rep("1h_vs_0h_utr_3", nrow(RBP_motif_enrichmets$`1h_vs_0h`$utr_3)),
+    rep("6h_vs_1h_utr_5", nrow(RBP_motif_enrichmets$`6h_vs_1h`$utr_5)),
+    rep("12h_vs_6h_utr_5", nrow(RBP_motif_enrichmets$`12h_vs_6h`$utr_5)),
+    rep("24h_vs_12h_utr_5", nrow(RBP_motif_enrichmets$`24h_vs_12h`$utr_5)),
+    rep("36h_vs_24h_utr_5", nrow(RBP_motif_enrichmets$`36h_vs_24h`$utr_5)),
+    rep("48h_vs_36h_utr_5", nrow(RBP_motif_enrichmets$`48h_vs_36h`$utr_5)),
+    rep("48h_vs_36h_utr_3", nrow(RBP_motif_enrichmets$`48h_vs_36h`$utr_3)),
+    rep("72h_vs_48h_utr_5", nrow(RBP_motif_enrichmets$`72h_vs_48h`$utr_5)),
+    rep("72h_vs_48h_utr_3", nrow(RBP_motif_enrichmets$`72h_vs_48h`$utr_3))
+  )) %>%
+  relocate(time_interval, .before = rank) %>%
+  dplyr::select(-motif_db)
 
 saveRDS(RBP_motif_enrichmets_df, file = here::here("results/meme_analysis", "RBP_motif_enrichmets_df.rds"))
 ```
@@ -107,14 +121,18 @@ saveRDS(RBP_motif_enrichmets_df, file = here::here("results/meme_analysis", "RBP
 
 ```{r}
 library(gt)
-table <- RBP_motif_enrichmets_df %>% 
-  group_by(time_interval) %>% 
-  gt() %>% 
-  tab_header(title = "RNA Binding Protein Enriched Motifs",
-             subtitle = "in 5' and 3' UTRs of ToD Candidates") %>% 
-  tab_spanner(label = "Meme Ame Statistics",
-              columns = 5:17) %>% 
-  opt_stylize(style = 3) 
+table <- RBP_motif_enrichmets_df %>%
+  group_by(time_interval) %>%
+  gt() %>%
+  tab_header(
+    title = "RNA Binding Protein Enriched Motifs",
+    subtitle = "in 5' and 3' UTRs of ToD Candidates"
+  ) %>%
+  tab_spanner(
+    label = "Meme Ame Statistics",
+    columns = 5:17
+  ) %>%
+  opt_stylize(style = 3)
 
 
 gtsave(table, filename = "RNA_Binding_Protein_Enriched_Motifs.html", path = here::here("results/meme_analysis"))
@@ -153,6 +171,8 @@ RNA_binding_proteins <- c(
 
 # filtering for which RNA binding proteins are present in the matched data
 RNA_binding_proteins <- RNA_binding_proteins[RNA_binding_proteins %in% background_genes]
+
+saveRDS(RNA_binding_proteins, here("data/processed/", "RNA_binding_proteins.rds"))
 ```
 
 
@@ -198,10 +218,10 @@ for (interval in names(RBP_motif_enrichmets)) {
     }) %>% discard(is.null)
     ToDCs <- ToD_candidates_list_Biostring[[interval]][[enriched_utr]] %>% Biostrings::RNAStringSet()
     matched_motifs_in_ToD_genes <- universalmotif::scan_sequences(meme_CISBP_motifs_filtered, ToDCs[Biostrings::width(ToDCs) > 20]) %>%
-      as.data.frame() %>% 
-      group_by(motif) %>% 
-      distinct(sequence, .keep_all = TRUE) %>% 
-      ungroup() %>% 
+      as.data.frame() %>%
+      group_by(motif) %>%
+      distinct(sequence, .keep_all = TRUE) %>%
+      ungroup() %>%
       dplyr::filter(motif %in% names(RNA_binding_proteins)) # this filters the df to only inlcude motifs that are targets of expressed proteins
     # Append the result to the list
     ToDCs_that_carry_motif_for_enriched_RBP_motifs[[interval]][[enriched_utr]] <- matched_motifs_in_ToD_genes
@@ -212,5 +232,161 @@ saveRDS(ToDCs_that_carry_motif_for_enriched_RBP_motifs, here::here("results/meme
 ```
 
 
+```{r Test if 10 random RPB motifs are found }
+random_CISBP_motifs <- sample(meme_CISBP_motifs, 10)
+
+ToDCs_carrying_random_motifs <- list()
+for (interval in names(RBP_motif_enrichmets)) {
+  enriched_utrs <- RBP_motif_enrichmets[[interval]]
+  for (enriched_utr in names(enriched_utrs)) {
+    motif_ids <- RBP_motif_enrichmets[[interval]][[enriched_utr]]$motif_id
+    ToDCs <- ToD_candidates_list_Biostring[[interval]][[enriched_utr]] %>% Biostrings::RNAStringSet()
+    matched_motifs_in_ToD_genes <- universalmotif::scan_sequences(random_CISBP_motifs, ToDCs[Biostrings::width(ToDCs) > 20]) %>%
+      as.data.frame() %>%
+      group_by(motif) %>%
+      distinct(sequence, .keep_all = TRUE) %>%
+      ungroup() %>%
+      dplyr::filter(motif %in% names(RNA_binding_proteins)) # this filters the df to only inlcude motifs that are targets of expressed proteins
+    # Append the result to the list
+    ToDCs_carrying_random_motifs[[interval]][[enriched_utr]] <- matched_motifs_in_ToD_genes
+  }
+}
+```
 
 
+```{r RBP that have target motifs on ToDCs temporal behavior}
+# we need a table that contains all the transcipt levels and protein levels for each time point
+transcriptomic_data <- here("data/processed", "dds.rds") %>%
+  readRDS() %>%
+  DESeq2::counts(., norm = T) %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column("ensembl_gene_id") %>%
+  as_tibble() %>%
+  mutate(
+    h0 = (X0h_rep1 + X0h_rep2) / 2,
+    h1 = (X1h_rep1 + X1h_rep2) / 2,
+    h6 = (X6h_rep1 + X6h_rep2) / 2,
+    h12 = (X12h_rep1 + X12h_rep2) / 2,
+    h24 = (X24h_rep1 + X24h_rep2) / 2,
+    h36 = (X36h_rep1 + X36h_rep2) / 2,
+    h48 = (X48h_rep1 + X48h_rep2) / 2,
+    h72 = (X72h_rep1 + X72h_rep2) / 2,
+    ensembl_gene_id = sub("\\..*", "", ensembl_gene_id)
+  ) %>%
+  dplyr::select(ensembl_gene_id, h0, h1, h6, h12, h24, h36, h48, h72)
+
+# to merge the list we need to add ensembl ids to the protein data
+mart <- biomaRt::useEnsembl(biomart = "genes", dataset = "mmusculus_gene_ensembl")
+ensembl_ids_for_proteomic_data <- biomaRt::getBM(
+  attributes = c("mgi_symbol", "ensembl_gene_id"),
+  filters = "mgi_symbol",
+  values = proteomic_data$GeneID,
+  mart = mart
+)
+
+proteomic_data <- here("data/processed/yang_paper/", "yang_proteomics.rds") %>%
+  readRDS() %>%
+  dplyr::select(1:10) %>%
+  as_tibble() %>%
+  rename(mgi_symbol = GeneID) %>%
+  merge(., ensembl_ids_for_proteomic_data, by = "mgi_symbol")
+
+# merging the transcirptomic data and the proteomic data
+trans_prot_data <- merge(transcriptomic_data, proteomic_data, by = "ensembl_gene_id") %>%
+  relocate(mgi_symbol, .after = ensembl_gene_id) %>%
+  relocate(UniprotID, .after = mgi_symbol) %>%
+  rename_with(~ gsub("^h(\\d+)$", "h\\1_trans", .), starts_with("h")) %>%
+  rename_with(~ gsub("^X(\\d+).", "h\\1_prot", .), starts_with("X")) %>%
+  dplyr::filter(rowSums(is.na(.)) <= 3)
+
+saveRDS(trans_prot_data, file = here("data/processed/yang_paper/", "trans_prot_data.rds"))
+
+
+```
+
+
+```{r}
+library(ggrepel)
+library(patchwork)
+trans_prot_data <- here("data/processed/yang_paper/", "trans_prot_data.rds") %>% readRDS()
+
+long_trans_data <- trans_prot_data %>%
+  filter(mgi_symbol %in% RNA_binding_proteins) %>%
+  dplyr::select(mgi_symbol, h0_trans, h1_trans, h6_trans, h12_trans, h24_trans, h36_trans, h48_trans, h72_trans) %>%
+  pivot_longer(
+    cols = starts_with("h"), # Select all columns starting with 'h'
+    names_to = "time_point", # New column for the names of the columns
+    values_to = "trans_value" # New column for the values
+  ) %>%
+  mutate(time_point = factor(time_point, levels = c("h0_trans", "h1_trans", "h6_trans", "h12_trans", "h24_trans", "h36_trans", "h48_trans", "h72_trans")),
+         trans_value = log10(trans_value))
+
+long_prot_data <- trans_prot_data %>%
+  filter(mgi_symbol %in% RNA_binding_proteins) %>%
+  dplyr::select(mgi_symbol, h0_prot, h1_prot, h6_prot, h12_prot, h24_prot, h36_prot, h48_prot, h72_prot) %>%
+  pivot_longer(
+    cols = starts_with("h"), # Select all columns starting with 'h'
+    names_to = "time_point", # New column for the names of the columns
+    values_to = "prot_value" # New column for the values
+  ) %>%
+  mutate(time_point = factor(time_point, levels = c("h0_prot", "h1_prot", "h6_prot", "h12_prot", "h24_prot", "h36_prot", "h48_prot", "h72_prot")))
+
+p1 <- ggplot(long_trans_data, aes(x = time_point, y = trans_value, group = mgi_symbol, color = mgi_symbol)) +
+  geom_line() + # Add lines for each mgi_symbol
+  geom_point() + # Add points at each time point
+  labs(
+    title = "RNA expression of RNA Binding Proteins Over Time",
+    x = "Time Point",
+    y = "log10(Gene Expression Value)"
+  ) +
+  theme_minimal() + # Use a clean theme
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  ) +
+  geom_text_repel(
+    data = long_trans_data %>%
+      group_by(mgi_symbol) %>%
+      filter(time_point == "h72_trans"),
+    aes(label = mgi_symbol),
+    size = 3,
+    nudge_x = 1.5,
+    direction = "y",
+    hjust = 0
+  )
+
+p2 <- ggplot(long_prot_data, aes(x = time_point, y = prot_value, group = mgi_symbol, color = mgi_symbol)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "Protein expression of RNA Binding Proteins Over Time",
+    x = "Time Point",
+    y = "Protein Expression Value"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  ) +
+  geom_text_repel(
+    data = long_prot_data %>%
+      group_by(mgi_symbol) %>%
+      filter(time_point == "h72_prot"),
+    aes(label = mgi_symbol),
+    size = 3,
+    nudge_x = 1.5,
+    direction = "y",
+    hjust = 0
+  ) 
+
+plot <- p1 + p2
+
+
+ggsave(filename = "RBP_expression_over_time.png", 
+       plot = plot,
+       path = here("figures/"),
+       width = 13,
+       height = 9,
+       dpi = 300)
+
+```
